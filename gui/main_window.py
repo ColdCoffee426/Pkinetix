@@ -140,4 +140,15 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(
             "Data updated"
         )
-        
+    def _project_changed(self) -> None:
+        """
+        Handle updates after the project model changes.
+        """
+
+        observation_count = len(
+            self.application_state.project.observations
+        )
+
+        self.statusBar().showMessage(
+            f"{observation_count} observation(s) loaded"
+        )
