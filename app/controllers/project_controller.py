@@ -2,17 +2,23 @@ from app.models.project import Project
 from app.services.data_validator import DataValidator
 from app.models.observation import ObservationInput
 
+from PySide6.QtCore import QObject, Signal
 
-class ProjectController:
+
+
+
+class ProjectController(QObject):
     """
     Controller responsible for coordinating
     GUI data and project model.
     """
+    project_changed = Signal()
 
     def __init__(self, project: Project) -> None:
         self.project = project
         self.validator = DataValidator()
         self.validation_errors = []
+        super().__init__()
 
     def update_observations(
         self,
@@ -42,3 +48,5 @@ class ProjectController:
                 float(observation_input.time),
                 float(observation_input.concentration),
             )
+
+            self.project_changed.emit()
