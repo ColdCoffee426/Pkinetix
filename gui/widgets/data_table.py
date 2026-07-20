@@ -12,7 +12,7 @@ class DataTableWidget(QWidget):
         super().__init__()
 
         layout = QVBoxLayout()
-        self.table = QTableWidget(10, 2)
+        self.table = QTableWidget(0, 2) 
         self.table.setHorizontalHeaderLabels([
             "Time",
             "Concentration"
