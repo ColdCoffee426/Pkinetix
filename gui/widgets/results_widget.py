@@ -1,31 +1,33 @@
-from PySide6.QtWidgets import QWidget, QFormLayout, QLabel
+from dataclasses import dataclass, field
 
 
-class ResultsWidget(QWidget):
+@dataclass(slots=True)
+class AnalysisResult:
+    """
+    Stores the results of a pharmacokinetic analysis.
+    """
 
-    def __init__(self):
-        super().__init__()
+    # ---------- NCA Results ----------
 
-        layout = QFormLayout()
+    cmax: float | None = None
+    tmax: float | None = None
 
-        parameters = [
-            "Cmax",
-            "Tmax",
-            "λz",
-            "Half-life",
-            "AUC0-t",
-            "AUC0-inf",
-            "AUMC",
-            "MRT",
-            "Clearance",
-            "Vz"
-        ]
+    lambda_z: float | None = None
+    t_half: float | None = None
 
-        self.labels = {}
+    auc_0_t: float | None = None
+    auc_0_inf: float | None = None
 
-        for p in parameters:
-            label = QLabel("--")
-            self.labels[p] = label
-            layout.addRow(p, label)
+    aumc: float | None = None
+    mrt: float | None = None
 
-        self.setLayout(layout)
+    cl: float | None = None
+    vz: float | None = None
+
+    # ---------- Metadata ----------
+
+    analysis_mode: str = "NCA"
+
+    route: str | None = None
+
+    warnings: list[str] = field(default_factory=list)

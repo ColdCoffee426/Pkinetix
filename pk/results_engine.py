@@ -29,15 +29,11 @@ class ResultsEngine:
             cmax = cmax_observation.concentration
             tmax = calculate_tmax(cmax_observation)
 
-        return {
-            "Cmax": cmax,
-            "Tmax": tmax,
-            "Lambda_z": None,
-            "Half-life": None,
-            "AUC0-t": None,
-            "AUC0-inf": None,
-            "AUMC": None,
-            "MRT": None,
-            "Clearance": None,
-            "Vz": None,
-        }
+        from app.models.analysis_result import AnalysisResult
+        result = AnalysisResult()
+
+        result.cmax = ...
+        result.tmax = ...
+        result.auc_0_t = ...
+
+        return result

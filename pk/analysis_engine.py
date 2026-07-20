@@ -1,41 +1,24 @@
-##this file will be prepare the data and is not for calculations, basically a data prep layer.
-
 from app.models.project import Project
+
+
 class AnalysisEngine:
     """
-    Coordinates pharmacokinetic analyses.
-
-    At this stage, it only prepares validated
-    concentration-time data for visualization.
-
-    Future responsibilities:
-    - Non-compartmental analysis
-    - Compartmental analysis
-    - Statistics
-    - Simulation
+    Prepares project data before analysis.
     """
 
-    def __init__(self, project: Project) -> None:
+    def __init__(self, project: Project):
         self.project = project
 
-    def get_plot_data(self) -> tuple[list[float], list[float]]:
+    def prepare(self) -> Project:
         """
-        Return time and concentration values for plotting.
+        Prepare analysis data.
+
+        Future responsibilities:
+
+        - Remove empty rows
+        - Validate observations
+        - Unit conversion
+        - Sort observations
         """
 
-        observations = sorted(
-            self.project.observations,
-            key=lambda observation: observation.time,
-        )
-
-        time = [
-            observation.time
-            for observation in observations
-        ]
-
-        concentration = [
-            observation.concentration
-            for observation in observations
-        ]
-
-        return time, concentration
+        return self.project

@@ -1,49 +1,39 @@
-from dataclasses import dataclass
-
 import numpy as np
 
-
-@dataclass(slots=True)
-class RegressionResult:
-    """
-    Stores the results of a simple linear regression.
-    """
-
-    slope: float
-    intercept: float
-    r_value: float
-    r_squared: float
+from app.models.regression_result import RegressionResult
 
 
 def linear_regression(
-    x: np.ndarray,
-    y: np.ndarray,
+    x: list[float],
+    y: list[float],
 ) -> RegressionResult:
     """
     Perform simple linear regression.
 
     Parameters
     ----------
-    x
+    x : list[float]
         Independent variable.
 
-    y
+    y : list[float]
         Dependent variable.
 
     Returns
     -------
     RegressionResult
+        Regression statistics.
     """
 
-    slope, intercept = np.polyfit(x, y, 1)
+    x_array = np.asarray(x, dtype=float)
+    y_array = np.asarray(y, dtype=float)
 
-    correlation_matrix = np.corrcoef(x, y)
+    slope, intercept = np.polyfit(x_array, y_array, 1)
 
-    r = correlation_matrix[0, 1]
+    r = np.corrcoef(x_array, y_array)[0, 1]
 
     return RegressionResult(
         slope=slope,
         intercept=intercept,
-        r_value=r,
-        r_squared=r ** 2,
+        r=r,
+        r_squared=r**2,
     )

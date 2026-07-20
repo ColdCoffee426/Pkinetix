@@ -1,4 +1,6 @@
 from dataclasses import dataclass, field
+from app.models.units import Units
+units: Units
 @dataclass
 class Observation:
     """
@@ -39,3 +41,22 @@ class Project:
                 concentration=concentration,
             )
         )
+
+@dataclass(slots=True)
+class Units:
+
+    time: str = "h"
+
+    concentration: str = "ng/mL"
+
+    dose: str = "mg"
+
+    body_weight: str = "kg"
+
+    volume: str = "L"
+
+    clearance: str = "L/h"
+
+    auc: str = "ng·h/mL"
+
+    aumc: str = "ng·h²/mL"
