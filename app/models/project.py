@@ -2,26 +2,37 @@ from dataclasses import dataclass, field
 
 
 @dataclass
+class Observation:
+    """
+    Single concentration-time observation.
+    """
+
+    time: float | None = None
+    concentration: float | None = None
+
+
+@dataclass
 class Project:
     """
-    Represents an open PKinetix project.
+    Represents a PKinetix project.
 
-    This class will eventually hold study information,
-    concentration-time data, analysis results,
-    application settings, and project metadata.
+    Stores study information and experimental data.
     """
 
     study_name: str = ""
+
     drug_name: str = ""
+
     subject_id: str = ""
 
     dose: float | None = None
-    body_weight: float | None = None
 
-    route: str = "Oral"
+    body_weight: float | None = None
 
     comments: str = ""
 
-    observations: list = field(default_factory=list)
+    route: str | None = None
 
-    results: dict = field(default_factory=dict)
+    observations: list[Observation] = field(
+        default_factory=list
+    )
