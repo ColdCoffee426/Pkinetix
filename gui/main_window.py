@@ -133,11 +133,7 @@ class MainWindow(QMainWindow):
         data = self.data_table.get_data()
 
         self.project_controller.update_observations(data)
-############################
-        print(
-            self.application_state.project.observations
-        )
-##################
+
         self.statusBar().showMessage(
             "Data updated"
         )
