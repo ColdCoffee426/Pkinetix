@@ -1,4 +1,4 @@
-from app.models.project import Project
+from app.project import Project
 class ApplicationState:
     """
     Stores the application's current state.
