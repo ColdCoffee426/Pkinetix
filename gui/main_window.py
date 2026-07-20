@@ -1,4 +1,5 @@
 from PySide6.QtCore import Qt
+from pk.analysis_engine import AnalysisEngine
 from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -26,6 +27,9 @@ class MainWindow(QMainWindow):
         self.application_state = ApplicationState()
 
         self.project_controller = ProjectController(
+            self.application_state.project
+        )
+        self.analysis_engine = AnalysisEngine(
             self.application_state.project
         )
         self.project_controller.project_changed.connect(
@@ -148,7 +152,13 @@ class MainWindow(QMainWindow):
         observation_count = len(
             self.application_state.project.observations
         )
+        time, concentration = self.analysis_engine.get_plot_data()
+
+        self.graph.canvas.plot_profile(
+            time,
+            concentration,
+        )
 
         self.statusBar().showMessage(
-            f"{observation_count} observation(s) loaded"
+            f"{len(time)} observations loaded"
         )
