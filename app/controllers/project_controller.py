@@ -38,7 +38,7 @@ class ProjectController(QObject):
                 observation_input.concentration,
             )
 
-            if not result.valid:
+            if not result.is_valid:
                 self.validation_errors.append(
                     result
                 )

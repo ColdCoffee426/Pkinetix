@@ -1,30 +1,54 @@
 from dataclasses import dataclass, field
-from app.models.units import Units
-units: Units
-@dataclass
+
+
+@dataclass(slots=True)
+class Units:
+
+    time: str = "h"
+    concentration: str = "ng/mL"
+    dose: str = "mg"
+    body_weight: str = "kg"
+    volume: str = "L"
+    clearance: str = "L/h"
+    auc: str = "ng·h/mL"
+    aumc: str = "ng·h²/mL"
+
+
+@dataclass(slots=True)
 class Observation:
     """
-    Single concentration-time observation.
+    Clean concentration-time observation.
     """
+
     time: float | None = None
     concentration: float | None = None
 
-@dataclass
+
+@dataclass(slots=True)
 class Project:
     """
     Represents a PKinetix project.
-    Stores study information and experimental data.
     """
+
     study_name: str = ""
     drug_name: str = ""
     subject_id: str = ""
+
     dose: float | None = None
     body_weight: float | None = None
+
     comments: str = ""
+
     route: str | None = None
+
+    units: Units = field(
+        default_factory=Units
+    )
+
     observations: list[Observation] = field(
         default_factory=list
     )
+
 
     def add_observation(
         self,
@@ -32,7 +56,7 @@ class Project:
         concentration: float,
     ) -> None:
         """
-        Add a concentration-time observation.
+        Add cleaned observation data.
         """
 
         self.observations.append(
@@ -41,22 +65,3 @@ class Project:
                 concentration=concentration,
             )
         )
-
-@dataclass(slots=True)
-class Units:
-
-    time: str = "h"
-
-    concentration: str = "ng/mL"
-
-    dose: str = "mg"
-
-    body_weight: str = "kg"
-
-    volume: str = "L"
-
-    clearance: str = "L/h"
-
-    auc: str = "ng·h/mL"
-
-    aumc: str = "ng·h²/mL"

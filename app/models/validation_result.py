@@ -31,3 +31,21 @@ class ValidationResult:
                 message=message,
             )
         )
+from dataclasses import dataclass, field
+
+
+@dataclass(slots=True)
+class ValidationResult:
+    """
+    Stores data validation status.
+    """
+
+    is_valid: bool = True
+
+    errors: list[str] = field(
+        default_factory=list
+    )
+
+    warnings: list[str] = field(
+        default_factory=list
+    )
