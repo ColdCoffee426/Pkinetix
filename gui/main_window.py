@@ -9,10 +9,13 @@ from PySide6.QtWidgets import (
 )
 
 
+
 from gui.widgets.study_information import StudyInformationWidget
 from gui.widgets.data_table import DataTableWidget
 from gui.widgets.graph_widget import GraphWidget
 from gui.widgets.results_widget import ResultsWidget
+from app.state.application_state import ApplicationState
+from app.controllers.project_controller import ProjectController
 
 
 class MainWindow(QMainWindow):
@@ -20,6 +23,13 @@ class MainWindow(QMainWindow):
 
     def __init__(self) -> None:
         super().__init__()
+        self.application_state = ApplicationState()
+
+        self.project_controller = ProjectController(
+            self.application_state.project
+        )
+
+
 
         self.setWindowTitle("PKinetix")
         self.resize(1400, 900)
@@ -46,6 +56,9 @@ class MainWindow(QMainWindow):
         self.graph = GraphWidget()
         self.results = ResultsWidget()
         self.data_table = DataTableWidget()
+        self.data_table.data_changed.connect(
+            self._on_data_changed
+        )
 
         # Wrap widgets in panels
         study_panel = self._create_panel(
@@ -112,3 +125,20 @@ class MainWindow(QMainWindow):
 
         return panel
     
+    def _on_data_changed(self) -> None:
+        """
+        Update project model when table changes.
+        """
+
+        data = self.data_table.get_data()
+
+        self.project_controller.update_observations(data)
+############################
+        print(
+            self.application_state.project.observations
+        )
+##################
+        self.statusBar().showMessage(
+            "Data updated"
+        )
+        
