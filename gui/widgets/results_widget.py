@@ -1,33 +1,63 @@
-from dataclasses import dataclass, field
+from PySide6.QtWidgets import QFormLayout, QLabel, QWidget
+
+from app.models.analysis_result import AnalysisResult
 
 
-@dataclass(slots=True)
-class AnalysisResult:
+class ResultsWidget(QWidget):
     """
-    Stores the results of a pharmacokinetic analysis.
+    Displays pharmacokinetic analysis results.
     """
 
-    # ---------- NCA Results ----------
+    def __init__(self) -> None:
+        super().__init__()
 
-    cmax: float | None = None
-    tmax: float | None = None
+        self.labels: dict[str, QLabel] = {}
 
-    lambda_z: float | None = None
-    t_half: float | None = None
+        layout = QFormLayout(self)
 
-    auc_0_t: float | None = None
-    auc_0_inf: float | None = None
+        parameters = [
+            ("Cmax", "cmax"),
+            ("Tmax", "tmax"),
+            ("λz", "lambda_z"),
+            ("Half-life", "t_half"),
+            ("AUC₀-t", "auc_0_t"),
+            ("AUC₀-∞", "auc_0_inf"),
+            ("% AUC Extrap.", "auc_extrapolated_percent"),
+            ("AUMC", "aumc"),
+            ("MRT", "mrt"),
+            ("Clearance", "cl"),
+            ("Vz", "vz"),
+        ]
 
-    aumc: float | None = None
-    mrt: float | None = None
+        for title, attribute in parameters:
+            label = QLabel("--")
+            self.labels[attribute] = label
+            layout.addRow(title, label)
 
-    cl: float | None = None
-    vz: float | None = None
+    def clear_results(self) -> None:
+        """
+        Reset all displayed values.
+        """
 
-    # ---------- Metadata ----------
+        for label in self.labels.values():
+            label.setText("--")
 
-    analysis_mode: str = "NCA"
+    def update_results(
+        self,
+        results: AnalysisResult,
+    ) -> None:
+        """
+        Update displayed pharmacokinetic results.
+        """
 
-    route: str | None = None
+        for attribute, label in self.labels.items():
+            value = getattr(results, attribute)
 
-    warnings: list[str] = field(default_factory=list)
+            if value is None:
+                label.setText("--")
+                continue
+
+            if isinstance(value, float):
+                label.setText(f"{value:.4f}")
+            else:
+                label.setText(str(value))

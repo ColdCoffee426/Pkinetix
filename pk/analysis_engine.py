@@ -22,3 +22,22 @@ class AnalysisEngine:
         """
 
         return self.project
+
+    def get_plot_data(
+        self,
+    ) -> tuple[list[float], list[float]]:
+        """
+        Return time and concentration data
+        for graph plotting.
+        """
+
+        time = []
+        concentration = []
+
+        for observation in self.project.observations:
+            time.append(observation.time)
+            concentration.append(
+                observation.concentration
+            )
+
+        return time, concentration
