@@ -5,6 +5,7 @@ from PySide6.QtCore import (
     Signal,
 )
 from PySide6.QtGui import QAction, QKeySequence
+from app.models.observation import ObservationInput
 
 from PySide6.QtWidgets import (
     QWidget,
@@ -340,12 +341,9 @@ class DataTableWidget(QWidget):
 
         self.data_changed.emit()
 
-    def get_data(self) -> list[tuple[str, str]]:
+    def get_data(self) -> list[ObservationInput]:
         """
-        Return table contents.
-
-        Returns:
-            List of (time, concentration) pairs.
+        Return raw table input.
         """
 
         data = []
@@ -353,7 +351,6 @@ class DataTableWidget(QWidget):
         for row in range(self.table.rowCount()):
 
             time_item = self.table.item(row, 0)
-
             concentration_item = self.table.item(row, 1)
 
             time = (
@@ -369,12 +366,11 @@ class DataTableWidget(QWidget):
             )
 
             data.append(
-                (
-                    time,
-                    concentration,
+                ObservationInput(
+                    row=row,
+                    time=time,
+                    concentration=concentration,
                 )
             )
 
         return data
-
-    
