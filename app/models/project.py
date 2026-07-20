@@ -8,9 +8,6 @@ class Observation:
     """
     time: float | None = None
     concentration: float | None = None
-
-
-@dataclass
 class Project:
     """
     Represents a PKinetix project.
@@ -27,3 +24,19 @@ class Project:
     observations: list[Observation] = field(
         default_factory=list
     )
+
+    def add_observation(
+            self,
+            time: float,
+            concentration: float,
+        ) -> None:
+            """
+            Add a concentration-time observation.
+            """
+
+            self.observations.append(
+                Observation(
+                    time=time,
+                    concentration=concentration,
+                )
+            )
