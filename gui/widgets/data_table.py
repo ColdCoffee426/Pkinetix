@@ -322,15 +322,18 @@ class DataTableWidget(QWidget):
                     return True
 
                 # Start editing when typing
-                elif event.text():
+                item = self.table.currentItem()
 
-                    item = self.table.currentItem()
+                if item is None:
+                    return False
 
-                    if item is not None:
+                item.setText("")
 
-                        item.setText("")
+                self.table.editItem(item)
 
-                        self.table.editItem(item)
+                return True
+
+
 
         return super().eventFilter(obj, event)
 

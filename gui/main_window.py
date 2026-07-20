@@ -28,6 +28,9 @@ class MainWindow(QMainWindow):
         self.project_controller = ProjectController(
             self.application_state.project
         )
+        self.project_controller.project_changed.connect(
+             self._project_changed
+        )
 
 
 
