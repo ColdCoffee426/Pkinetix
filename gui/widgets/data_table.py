@@ -1,11 +1,15 @@
+from PySide6.QtCore import Qt
+
+from PySide6.QtGui import QAction
+
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QTableWidget,
     QHeaderView,
     QAbstractItemView,
+    QMenu,
 )
-
 
 class DataTableWidget(QWidget):
     """
@@ -74,6 +78,13 @@ class DataTableWidget(QWidget):
         )
 
         self.table.setSortingEnabled(False)
+        self.table.setContextMenuPolicy(
+        Qt.CustomContextMenu
+    )
+
+        self.table.customContextMenuRequested.connect(
+        self._show_context_menu
+    )
 
     def row_count(self) -> int:
         """
@@ -104,3 +115,70 @@ class DataTableWidget(QWidget):
         """
 
         self.table.setRowCount(0)
+    
+    def _show_context_menu(self, position) -> None:
+        """
+        Display the table context menu.
+        """
+
+        menu = QMenu(self)
+
+        insert_action = QAction(
+            "Insert Row",
+            self
+        )
+
+        delete_action = QAction(
+            "Delete Selected Rows",
+            self
+        )
+
+        clear_action = QAction(
+            "Clear Selected Cells",
+            self
+        )
+
+        insert_action.triggered.connect(
+            self.add_empty_row
+        )
+
+        delete_action.triggered.connect(
+            self.delete_selected_rows
+        )
+
+        clear_action.triggered.connect(
+            self.clear_selected_cells
+        )
+
+        menu.addAction(insert_action)
+        menu.addAction(delete_action)
+        menu.addSeparator()
+        menu.addAction(clear_action)
+
+        menu.exec(
+            self.table.viewport().mapToGlobal(position)
+        )
+
+    def delete_selected_rows(self) -> None:
+        """
+        Delete selected rows from the table.
+        """
+
+        selected_rows = sorted(
+            {
+                index.row()
+                for index in self.table.selectedIndexes()
+            },
+            reverse=True,
+        )
+
+        for row in selected_rows:
+            self.table.removeRow(row)
+
+    def clear_selected_cells(self) -> None:
+        """
+        Clear contents of selected cells.
+        """
+
+        for item in self.table.selectedItems():
+            item.setText("")
