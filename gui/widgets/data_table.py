@@ -1,5 +1,9 @@
 
-from PySide6.QtCore import Qt, QEvent
+from PySide6.QtCore import (
+    Qt,
+    QEvent,
+    Signal,
+)
 from PySide6.QtGui import QAction, QKeySequence
 
 from PySide6.QtWidgets import (
@@ -14,10 +18,13 @@ from PySide6.QtWidgets import (
 )
 
 class DataTableWidget(QWidget):
+    
     """
     Widget responsible for displaying and editing
     concentration-time data.
     """
+    data_changed = Signal()
+
 
     def __init__(self) -> None:
         super().__init__()
@@ -45,6 +52,9 @@ class DataTableWidget(QWidget):
 
         self._configure_table()
         self.table.installEventFilter(self)
+        self.table.itemChanged.connect(
+            self._on_item_changed
+        )
 
     def _create_layout(self) -> None:
         """
@@ -308,3 +318,46 @@ class DataTableWidget(QWidget):
                     return True
 
         return super().eventFilter(obj, event)
+    
+    def _on_item_changed(self) -> None:
+        """
+        Emit signal when table data changes.
+        """
+
+        self.data_changed.emit()
+
+    def get_data(self) -> list[tuple[str, str]]:
+        """
+        Return table contents.
+
+        Returns:
+            List of (time, concentration) pairs.
+        """
+
+        data = []
+
+        for row in range(self.table.rowCount()):
+
+            time_item = self.table.item(row, 0)
+            concentration_item = self.table.item(row, 1)
+
+            time = (
+                time_item.text()
+                if time_item
+                else ""
+            )
+
+            concentration = (
+                concentration_item.text()
+                if concentration_item
+                else ""
+            )
+
+            data.append(
+                (
+                    time,
+                    concentration,
+                )
+            )
+
+        return data
