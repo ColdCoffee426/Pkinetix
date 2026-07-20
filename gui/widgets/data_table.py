@@ -293,7 +293,7 @@ class DataTableWidget(QWidget):
 
     def eventFilter(self, obj, event):
         """
-        Handle keyboard shortcuts and typing.
+        Handle keyboard shortcuts and typing behaviour.
         """
 
         if obj == self.table:
@@ -322,20 +322,41 @@ class DataTableWidget(QWidget):
                     return True
 
                 # Start editing when typing
-                item = self.table.currentItem()
+                elif event.text().strip():
 
-                if item is None:
-                    return False
+                    row = self.table.currentRow()
+                    column = self.table.currentColumn()
 
-                item.setText("")
+                    if row >= 0 and column >= 0:
 
-                self.table.editItem(item)
+                        item = self.table.item(
+                            row,
+                            column,
+                        )
 
-                return True
+                        if item is None:
+                            item = QTableWidgetItem("")
+                            self.table.setItem(
+                                row,
+                                column,
+                                item,
+                            )
 
+                        item.setText(
+                            event.text()
+                        )
 
+                        self.table.editItem(
+                            item
+                        )
 
-        return super().eventFilter(obj, event)
+                        return True
+
+        return super().eventFilter(
+            obj,
+            event,
+        )
+
 
     def _on_item_changed(self) -> None:
         """
