@@ -4,7 +4,11 @@ from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QSplitter,
+    QToolBar,
+    QGroupBox
 )
+
+
 
 from gui.widgets.study_information import StudyInformationWidget
 from gui.widgets.data_table import DataTableWidget
@@ -15,6 +19,7 @@ from gui.widgets.results_widget import ResultsWidget
 class MainWindow(QMainWindow):
     """Main application window for PKinetix."""
 
+    
     def __init__(self) -> None:
         super().__init__()
 
@@ -35,34 +40,59 @@ class MainWindow(QMainWindow):
         self.main_layout = QVBoxLayout(self.central_widget)
         self.main_layout.setContentsMargins(5, 5, 5, 5)
 
-    def _create_layout(self) -> None:
-        """Create the main splitter layout."""
+   def _create_layout(self) -> None:
+    """Create the main application layout."""
 
-        # Create widgets
-        self.study_information = StudyInformationWidget()
-        self.graph = GraphWidget()
-        self.results = ResultsWidget()
-        self.data_table = DataTableWidget()
+    # Widgets
+    self.study_information = StudyInformationWidget()
+    self.graph = GraphWidget()
+    self.results = ResultsWidget()
+    self.data_table = DataTableWidget()
 
-        # Horizontal splitter
-        top_splitter = QSplitter(Qt.Horizontal)
+    # Wrap widgets inside titled panels
+    study_panel = self._create_panel(
+        "Study Information",
+        self.study_information,
+    )
 
-        top_splitter.addWidget(self.study_information)
-        top_splitter.addWidget(self.graph)
-        top_splitter.addWidget(self.results)
+    graph_panel = self._create_panel(
+        "Concentration-Time Plot",
+        self.graph,
+    )
 
-        # Initial proportions
-        top_splitter.setStretchFactor(0, 2)
-        top_splitter.setStretchFactor(1, 5)
-        top_splitter.setStretchFactor(2, 2)
+    results_panel = self._create_panel(
+        "Results",
+        self.results,
+    )
 
-        # Vertical splitter
-        main_splitter = QSplitter(Qt.Vertical)
+    table_panel = self._create_panel(
+        "Concentration-Time Data",
+        self.data_table,
+    )
 
-        main_splitter.addWidget(top_splitter)
-        main_splitter.addWidget(self.data_table)
+    # Minimum sizes
+    study_panel.setMinimumWidth(260)
+    graph_panel.setMinimumWidth(450)
+    results_panel.setMinimumWidth(240)
 
-        main_splitter.setStretchFactor(0, 3)
-        main_splitter.setStretchFactor(1, 2)
+    # Top splitter
+    top_splitter = QSplitter(Qt.Horizontal)
 
-        self.main_layout.addWidget(main_splitter)
+    top_splitter.addWidget(study_panel)
+    top_splitter.addWidget(graph_panel)
+    top_splitter.addWidget(results_panel)
+
+    top_splitter.setStretchFactor(0, 2)
+    top_splitter.setStretchFactor(1, 6)
+    top_splitter.setStretchFactor(2, 2)
+
+    # Main splitter
+    main_splitter = QSplitter(Qt.Vertical)
+
+    main_splitter.addWidget(top_splitter)
+    main_splitter.addWidget(table_panel)
+
+    main_splitter.setStretchFactor(0, 65)
+    main_splitter.setStretchFactor(1, 35)
+
+    self.main_layout.addWidget(main_splitter)
