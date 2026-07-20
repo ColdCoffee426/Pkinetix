@@ -79,7 +79,7 @@ class DataTableWidget(QWidget):
         )
 
         self.table.setEditTriggers(
-            QAbstractItemView.DoubleClicked
+            QAbstractItemView.SelectedClicked
             | QAbstractItemView.EditKeyPressed
         )
 
