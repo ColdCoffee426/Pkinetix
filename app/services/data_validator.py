@@ -1,24 +1,30 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class ValidationResult:
     """
-    Result returned after validation.
+    Result returned from validation.
     """
+
     valid: bool
     message: str = ""
+    row: int | None = None
+    column: int | None = None
+
 
 class DataValidator:
     """
-    Validates pharmacokinetic concentration-time data.
+    Validates concentration-time observations.
     """
+
     def validate_value(
         self,
         time: str,
         concentration: str,
     ) -> ValidationResult:
         """
-        Validate a single observation.
+        Validate one row of data.
         """
 
         if not time or not concentration:
