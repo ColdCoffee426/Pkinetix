@@ -1,14 +1,16 @@
-from PySide6.QtCore import Qt
 
-from PySide6.QtGui import QAction
+from PySide6.QtCore import Qt, QEvent
+from PySide6.QtGui import QAction, QKeySequence
 
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QTableWidget,
+    QTableWidgetItem,
     QHeaderView,
     QAbstractItemView,
     QMenu,
+    QApplication,
 )
 
 class DataTableWidget(QWidget):
@@ -42,6 +44,7 @@ class DataTableWidget(QWidget):
         )
 
         self._configure_table()
+        self.table.installEventFilter(self)
 
     def _create_layout(self) -> None:
         """
@@ -57,34 +60,30 @@ class DataTableWidget(QWidget):
         Configure table behaviour.
         """
 
-        header = self.table.horizontalHeader()
-
-        header.setSectionResizeMode(
-            QHeaderView.Stretch
+        self.table.setSelectionMode(
+            QAbstractItemView.ExtendedSelection
         )
-
-        self.table.setAlternatingRowColors(True)
 
         self.table.setSelectionBehavior(
             QAbstractItemView.SelectItems
         )
 
-        self.table.setSelectionMode(
-            QAbstractItemView.ExtendedSelection
-        )
-
         self.table.setEditTriggers(
-            QAbstractItemView.AllEditTriggers
+            QAbstractItemView.DoubleClicked
+            | QAbstractItemView.EditKeyPressed
         )
 
-        self.table.setSortingEnabled(False)
+        self.table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.Stretch
+        )
+
         self.table.setContextMenuPolicy(
-        Qt.CustomContextMenu
-    )
+            Qt.CustomContextMenu
+        )
 
         self.table.customContextMenuRequested.connect(
-        self._show_context_menu
-    )
+            self._show_context_menu
+        )
 
     def row_count(self) -> int:
         """
@@ -104,10 +103,18 @@ class DataTableWidget(QWidget):
         """
         Add a new empty row.
         """
+        
+        row = self.row_count()
 
-        self.table.insertRow(
-            self.row_count()
-        )
+        self.table.insertRow(row)
+
+        for column in range(self.column_count()):
+            self.table.setItem(
+                row,
+                column,
+                QTableWidgetItem("")
+            )
+
 
     def clear_table(self) -> None:
         """
@@ -182,3 +189,122 @@ class DataTableWidget(QWidget):
 
         for item in self.table.selectedItems():
             item.setText("")
+
+    def copy_selection(self) -> None:
+        """
+        Copy selected cells to clipboard.
+        """
+
+        selected = self.table.selectedRanges()
+
+        if not selected:
+            return
+
+        clipboard_text = ""
+
+        selected_range = selected[0]
+
+        for row in range(
+            selected_range.topRow(),
+            selected_range.bottomRow() + 1
+        ):
+
+            row_data = []
+
+            for column in range(
+                selected_range.leftColumn(),
+                selected_range.rightColumn() + 1
+            ):
+
+                item = self.table.item(
+                    row,
+                    column
+                )
+
+                if item:
+                    row_data.append(item.text())
+                else:
+                    row_data.append("")
+
+            clipboard_text += "\t".join(row_data)
+            clipboard_text += "\n"
+
+        clipboard = QApplication.clipboard()
+
+        clipboard.setText(
+            clipboard_text.rstrip("\n")
+        )
+
+
+    def paste_selection(self) -> None:
+        """
+        Paste tab-separated clipboard data.
+        """
+
+        clipboard = QApplication.clipboard()
+
+        text = clipboard.text()
+
+        if not text:
+            return
+
+        rows = text.splitlines()
+
+        start_row = self.table.currentRow()
+        start_column = self.table.currentColumn()
+
+        for row_index, row_data in enumerate(rows):
+
+            columns = row_data.split("\t")
+
+            for column_index, value in enumerate(columns):
+
+                row = start_row + row_index
+                column = start_column + column_index
+
+                if row >= self.table.rowCount():
+                    self.table.insertRow(row)
+
+                self.table.setItem(
+                    row,
+                    column,
+                    QTableWidgetItem(value)
+                )
+
+    def cut_selection(self) -> None:
+        """
+        Copy then clear selected cells.
+        """
+
+        self.copy_selection()
+
+        self.clear_selected_cells()
+
+    def eventFilter(self, obj, event):
+        """
+        Handle table keyboard shortcuts.
+        """
+
+        if obj == self.table:
+
+            if event.type() == QEvent.Type.KeyPress:
+
+                if event.matches(
+                    QKeySequence.StandardKey.Copy
+                ):
+                    self.copy_selection()
+                    return True
+
+                elif event.matches(
+                    QKeySequence.StandardKey.Paste
+                ):
+                    self.paste_selection()
+                    return True
+
+                elif event.matches(
+                    QKeySequence.StandardKey.Cut
+                ):
+                    self.cut_selection()
+                    return True
+
+        return super().eventFilter(obj, event)
