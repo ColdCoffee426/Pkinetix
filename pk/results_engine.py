@@ -1,5 +1,9 @@
-from app.models.project import Project
+#this file will be coordinating all the calculations
+#will import all calculatios from NCA
 
+from app.models.project import Project
+from pk.nca.cmax import calculate as calculate_cmax
+from pk.nca.tmax import calculate as calculate_tmax
 
 class ResultsEngine:
     """
@@ -13,15 +17,21 @@ class ResultsEngine:
         self.project = project
 
     def calculate(self) -> dict[str, float | None]:
-        """
-        Return all calculated PK parameters.
 
-        Currently returns placeholders.
-        """
+        cmax_observation = calculate_cmax(
+            self.project.observations
+        )
+
+        cmax = None
+        tmax = None
+
+        if cmax_observation is not None:
+            cmax = cmax_observation.concentration
+            tmax = calculate_tmax(cmax_observation)
 
         return {
-            "Cmax": None,
-            "Tmax": None,
+            "Cmax": cmax,
+            "Tmax": tmax,
             "Lambda_z": None,
             "Half-life": None,
             "AUC0-t": None,
