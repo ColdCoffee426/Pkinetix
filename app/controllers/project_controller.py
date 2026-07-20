@@ -11,6 +11,7 @@ class ProjectController:
     def __init__(self, project: Project) -> None:
         self.project = project
         self.validator = DataValidator()
+        self.validation_errors = []
 
     def update_observations(
         self,
@@ -21,7 +22,7 @@ class ProjectController:
         """
 
         self.project.observations.clear()
-
+        self.validation_errors.clear()
         for time, concentration in table_data:
 
             if not time or not concentration:
