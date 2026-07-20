@@ -1,6 +1,4 @@
 from dataclasses import dataclass, field
-
-
 @dataclass
 class Observation:
     """
@@ -8,12 +6,13 @@ class Observation:
     """
     time: float | None = None
     concentration: float | None = None
+
+@dataclass
 class Project:
     """
     Represents a PKinetix project.
     Stores study information and experimental data.
     """
-
     study_name: str = ""
     drug_name: str = ""
     subject_id: str = ""
@@ -26,17 +25,17 @@ class Project:
     )
 
     def add_observation(
-            self,
-            time: float,
-            concentration: float,
-        ) -> None:
-            """
-            Add a concentration-time observation.
-            """
+        self,
+        time: float,
+        concentration: float,
+    ) -> None:
+        """
+        Add a concentration-time observation.
+        """
 
-            self.observations.append(
-                Observation(
-                    time=time,
-                    concentration=concentration,
-                )
+        self.observations.append(
+            Observation(
+                time=time,
+                concentration=concentration,
             )
+        )

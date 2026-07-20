@@ -79,7 +79,7 @@ class DataTableWidget(QWidget):
         )
 
         self.table.setEditTriggers(
-            QAbstractItemView.SelectedClicked
+            QAbstractItemView.DoubleClicked
             | QAbstractItemView.EditKeyPressed
         )
 
@@ -292,33 +292,47 @@ class DataTableWidget(QWidget):
 
     def eventFilter(self, obj, event):
         """
-        Handle table keyboard shortcuts.
+        Handle keyboard shortcuts and typing.
         """
 
         if obj == self.table:
 
             if event.type() == QEvent.Type.KeyPress:
 
+                # Copy
                 if event.matches(
                     QKeySequence.StandardKey.Copy
                 ):
                     self.copy_selection()
                     return True
 
+                # Paste
                 elif event.matches(
                     QKeySequence.StandardKey.Paste
                 ):
                     self.paste_selection()
                     return True
 
+                # Cut
                 elif event.matches(
                     QKeySequence.StandardKey.Cut
                 ):
                     self.cut_selection()
                     return True
 
+                # Start editing when typing
+                elif event.text():
+
+                    item = self.table.currentItem()
+
+                    if item is not None:
+
+                        item.setText("")
+
+                        self.table.editItem(item)
+
         return super().eventFilter(obj, event)
-    
+
     def _on_item_changed(self) -> None:
         """
         Emit signal when table data changes.
@@ -339,6 +353,7 @@ class DataTableWidget(QWidget):
         for row in range(self.table.rowCount()):
 
             time_item = self.table.item(row, 0)
+
             concentration_item = self.table.item(row, 1)
 
             time = (
@@ -361,3 +376,5 @@ class DataTableWidget(QWidget):
             )
 
         return data
+
+    
