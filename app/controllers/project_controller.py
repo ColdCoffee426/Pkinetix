@@ -1,5 +1,6 @@
 from app.models.project import Project
 from app.services.data_validator import DataValidator
+from app.models.observation import ObservationInput
 
 
 class ProjectController:
@@ -15,7 +16,7 @@ class ProjectController:
 
     def update_observations(
         self,
-        table_data: list[tuple[str, str]],
+        table_data: list[ObservationInput],
     ) -> None:
         """
         Update project observations from table data.
@@ -23,26 +24,21 @@ class ProjectController:
 
         self.project.observations.clear()
         self.validation_errors.clear()
-        for time, concentration in table_data:
 
-            if not time or not concentration:
-                continue
+        for observation_input in table_data:
 
             result = self.validator.validate_value(
-            time,
-            concentration,
-        )
+                observation_input.time,
+                observation_input.concentration,
+            )
 
             if not result.valid:
+                self.validation_errors.append(
+                    result
+                )
                 continue
 
-
-            observation = (
-                float(time),
-                float(concentration),
-            )
-            
             self.project.add_observation(
-                observation[0],
-                observation[1],
+                float(observation_input.time),
+                float(observation_input.concentration),
             )
