@@ -149,15 +149,21 @@ class MainWindow(QMainWindow):
         Handle updates after the project model changes.
         """
 
-        observation_count = len(
-            self.application_state.project.observations
+        time, concentration = (
+            self.analysis_engine.get_plot_data()
         )
-        time, concentration = self.analysis_engine.get_plot_data()
 
         self.graph.canvas.plot_profile(
             time,
             concentration,
         )
+
+        if self.project_controller.analysis_result is None:
+            self.results.clear_results()
+        else:
+            self.results.update_results(
+                self.project_controller.analysis_result
+            )
 
         self.statusBar().showMessage(
             f"{len(time)} observations loaded"

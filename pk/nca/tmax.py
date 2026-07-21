@@ -1,12 +1,16 @@
 from app.models.observation import Observation
 
 
-def calculate(observation: Observation | None) -> float | None:
+def calculate(
+    cmax_observation: Observation | None,
+) -> float | None:
     """
-    Return the time corresponding to Cmax.
+    Calculate the time corresponding to the maximum observed
+    concentration (Tmax).
+
     Parameters
     ----------
-    observation
+    cmax_observation
         Observation returned by the Cmax calculator.
 
     Returns
@@ -14,7 +18,8 @@ def calculate(observation: Observation | None) -> float | None:
     float | None
         Time of maximum observed concentration.
     """
-    if observation is None:
+
+    if cmax_observation is None:
         return None
 
-    return observation.time
+    return cmax_observation.time

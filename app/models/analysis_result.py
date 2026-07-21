@@ -15,7 +15,7 @@ class AnalysisResult:
     t_half: float | None = None
 
     auc_0_t: float | None = None
-    auc_0_inf: float |None = None
+    auc_0_inf: float | None = None
     auc_extrapolated: float | None = None
     auc_extrapolated_percent: float | None = None
 

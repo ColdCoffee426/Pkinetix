@@ -1,10 +1,9 @@
 from app.models.project import Project
 from app.services.data_validator import DataValidator
 from app.models.observation import ObservationInput
+from pk.analysis_manager import AnalysisManager
 
 from PySide6.QtCore import QObject, Signal
-
-
 
 
 class ProjectController(QObject):
@@ -18,6 +17,9 @@ class ProjectController(QObject):
         self.project = project
         self.validator = DataValidator()
         self.validation_errors = []
+        self.project_validation = None
+        self.analysis_manager = AnalysisManager()
+        self.analysis_result = None
         super().__init__()
 
     def update_observations(
@@ -49,4 +51,17 @@ class ProjectController(QObject):
                 float(observation_input.concentration),
             )
 
-            self.project_changed.emit()
+        self.project_validation = self.validator.validate(
+            self.project
+        )
+
+        if self.project_validation.is_valid:
+            self.analysis_result = (
+                self.analysis_manager.analyze(
+                    self.project
+                )
+            )
+        else:
+            self.analysis_result = None
+
+        self.project_changed.emit()

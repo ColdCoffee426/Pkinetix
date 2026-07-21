@@ -1,9 +1,16 @@
-#this file will be coordinating all the calculations
-#will import all calculatios from NCA
+"""
+Coordinates pharmacokinetic result calculations.
 
+Individual PK parameters are delegated to dedicated
+calculator modules.
+"""
+
+from app.models.analysis_result import AnalysisResult
 from app.models.project import Project
+
 from pk.nca.cmax import calculate as calculate_cmax
 from pk.nca.tmax import calculate as calculate_tmax
+
 
 class ResultsEngine:
     """
@@ -16,24 +23,22 @@ class ResultsEngine:
     def __init__(self, project: Project) -> None:
         self.project = project
 
-    def calculate(self) -> dict[str, float | None]:
+    def calculate(self) -> AnalysisResult:
+        """
+        Calculate all currently implemented
+        pharmacokinetic parameters.
+        """
+
+        result = AnalysisResult()
 
         cmax_observation = calculate_cmax(
             self.project.observations
         )
 
-        cmax = None
-        tmax = None
-
         if cmax_observation is not None:
-            cmax = cmax_observation.concentration
-            tmax = calculate_tmax(cmax_observation)
-
-        from app.models.analysis_result import AnalysisResult
-        result = AnalysisResult()
-
-        result.cmax = ...
-        result.tmax = ...
-        result.auc_0_t = ...
+            result.cmax = cmax_observation.concentration
+            result.tmax = calculate_tmax(
+                cmax_observation
+            )
 
         return result

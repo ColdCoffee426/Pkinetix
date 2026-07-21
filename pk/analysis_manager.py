@@ -11,18 +11,16 @@ class AnalysisManager:
     This is the main entry point into the PK engine.
     """
 
-    def analyze(self, project: Project) -> dict:
+    def analyze(self, project: Project):
         """
-        Perform a complete analysis.
+        Perform a complete pharmacokinetic analysis.
         """
 
-        # Prepare analysis data
         engine = AnalysisEngine(project)
+        prepared_project = engine.prepare()
 
-        analysis_project = engine.prepare()
+        results = ResultsEngine(
+            prepared_project
+        ).calculate()
 
-        # Calculate results
-        from pk.analysis_manager import AnalysisManager
-        manager = AnalysisManager()
-
-        results = manager.analyze(project)
+        return results
