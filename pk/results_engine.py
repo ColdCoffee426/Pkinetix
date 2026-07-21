@@ -7,7 +7,7 @@ calculator modules.
 
 from app.models.analysis_result import AnalysisResult
 from app.models.project import Project
-
+from pk.nca.auc import calculate as calculate_auc
 from pk.nca.cmax import calculate as calculate_cmax
 from pk.nca.tmax import calculate as calculate_tmax
 
@@ -24,21 +24,16 @@ class ResultsEngine:
         self.project = project
 
     def calculate(self) -> AnalysisResult:
-        """
-        Calculate all currently implemented
-        pharmacokinetic parameters.
-        """
-
         result = AnalysisResult()
 
-        cmax_observation = calculate_cmax(
-            self.project.observations
-        )
+        observations = self.project.observations
+
+        cmax_observation = calculate_cmax(observations)
 
         if cmax_observation is not None:
             result.cmax = cmax_observation.concentration
-            result.tmax = calculate_tmax(
-                cmax_observation
-            )
+            result.tmax = calculate_tmax(cmax_observation)
+
+        result.auc_0_t = calculate_auc(observations)
 
         return result
