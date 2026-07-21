@@ -1,35 +1,66 @@
-from app.models.project import Project
-from app.models.terminal_phase_candidate import TerminalPhaseCandidate
+from app.models.observation import Observation
+from app.models.terminal_phase_candidate import (
+    TerminalPhaseCandidate,
+)
 
 
-MIN_TERMINAL_POINTS = 3
-
-
-def generate_terminal_candidates(
-    project: Project,
+def generate_candidates(
+    observations: list[Observation],
+    minimum_points: int = 3,
 ) -> list[TerminalPhaseCandidate]:
     """
     Generate all possible terminal phase candidates.
+
+    Each candidate contains the final observations of the
+    concentration-time profile.
+
+    Parameters
+    ----------
+    observations
+        Validated observations.
+
+    minimum_points
+        Minimum number of observations required for a
+        terminal phase.
+
+    Returns
+    -------
+    list[TerminalPhaseCandidate]
     """
 
-    observations = project.observations
+    candidates: list[
+        TerminalPhaseCandidate
+    ] = []
 
-    candidates: list[TerminalPhaseCandidate] = []
+    observation_count = len(observations)
+
+    if observation_count < minimum_points:
+        return candidates
 
     for start in range(
-        len(observations) - MIN_TERMINAL_POINTS
+        observation_count - minimum_points,
+        -1,
+        -1,
     ):
         subset = observations[start:]
 
-        if len(subset) < MIN_TERMINAL_POINTS:
-            continue
-
-        candidates.append(
-            TerminalPhaseCandidate(
-                indices=list(range(start, len(observations))),
-                times=[o.time for o in subset],
-                concentrations=[o.concentration for o in subset],
-            )
+        candidate = TerminalPhaseCandidate(
+            indices=list(
+                range(
+                    start,
+                    observation_count,
+                )
+            ),
+            times=[
+                observation.time
+                for observation in subset
+            ],
+            concentrations=[
+                observation.concentration
+                for observation in subset
+            ],
         )
+
+        candidates.append(candidate)
 
     return candidates

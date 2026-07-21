@@ -27,6 +27,8 @@ class ResultsWidget(QWidget):
             ("MRT", "mrt"),
             ("Clearance", "cl"),
             ("Vz", "vz"),
+            ("Terminal R²", "terminal_r_squared"),
+            ("Adj. R²", "terminal_adjusted_r_squared"),
         ]
 
         for title, attribute in parameters:

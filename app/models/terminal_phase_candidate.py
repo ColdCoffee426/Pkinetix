@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from app.models.regression_result import RegressionResult
+
 
 @dataclass(slots=True)
 class TerminalPhaseCandidate:
@@ -10,3 +12,4 @@ class TerminalPhaseCandidate:
     indices: list[int]
     times: list[float]
     concentrations: list[float]
+    regression: RegressionResult | None = None

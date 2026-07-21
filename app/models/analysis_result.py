@@ -57,3 +57,12 @@ class AnalysisResult:
                 self.auc_0_t,
             )
         )
+    @property
+    def has_terminal_phase(self) -> bool:
+        """
+        Returns True if a terminal phase was identified.
+        """
+
+        return (
+            self.lambda_z is not None
+        )
