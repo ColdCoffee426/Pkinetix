@@ -21,19 +21,6 @@ def calculate(
     Calculate the area under the concentration-time curve
     from time zero to the last measurable concentration
     (AUC₀–t).
-
-    Parameters
-    ----------
-    observations
-        Validated concentration-time observations.
-    method
-        Numerical integration method.
-
-    Returns
-    -------
-    float | None
-        Calculated AUC₀–t or None if fewer than two
-        observations are available.
     """
 
     if len(observations) < 2:
@@ -68,3 +55,76 @@ def calculate(
         auc += trapezoid_area
 
     return auc
+
+
+def calculate_auc_infinity(
+    auc_0_t: float | None,
+    last_concentration: float | None,
+    lambda_z: float | None,
+) -> float | None:
+    """
+    Calculate AUC from time zero to infinity.
+    """
+
+    if auc_0_t is None:
+        return None
+
+    if last_concentration is None:
+        return None
+
+    if lambda_z is None:
+        return None
+
+    if lambda_z <= 0:
+        return None
+
+    return (
+        auc_0_t
+        + last_concentration / lambda_z
+    )
+
+
+def calculate_extrapolated_auc(
+    auc_0_t: float | None,
+    auc_0_inf: float | None,
+) -> float | None:
+    """
+    Calculate the extrapolated portion of AUC.
+    """
+
+    if auc_0_t is None:
+        return None
+
+    if auc_0_inf is None:
+        return None
+
+    return auc_0_inf - auc_0_t
+
+
+def calculate_extrapolated_percent(
+    auc_0_t: float | None,
+    auc_0_inf: float | None,
+) -> float | None:
+    """
+    Calculate the percentage of extrapolated AUC.
+    """
+
+    extrapolated = calculate_extrapolated_auc(
+        auc_0_t,
+        auc_0_inf,
+    )
+
+    if extrapolated is None:
+        return None
+
+    if auc_0_inf is None:
+        return None
+
+    if auc_0_inf <= 0:
+        return None
+
+    return (
+        extrapolated
+        / auc_0_inf
+        * 100
+    )

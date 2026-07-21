@@ -12,4 +12,7 @@ class TerminalPhaseCandidate:
     indices: list[int]
     times: list[float]
     concentrations: list[float]
+
     regression: RegressionResult | None = None
+
+    score: float = 0.0

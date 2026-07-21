@@ -1,9 +1,14 @@
 import math
 
 from app.models.lambda_z_result import LambdaZResult
-from pk.common.regression import linear_regression
-from pk.nca.terminal_phase import generate_candidates
 from app.models.observation import Observation
+from pk.common.regression import linear_regression
+from pk.common.statistics import regression_score
+from pk.nca.terminal_phase import generate_candidates
+
+
+MINIMUM_ADJUSTED_R2 = 0.80
+
 
 def calculate(
     observations: list[Observation],
@@ -12,7 +17,9 @@ def calculate(
     Estimate the terminal elimination rate constant (λz).
     """
 
-    candidates = generate_candidates(observations)
+    candidates = generate_candidates(
+        observations
+    )
 
     best_candidate = None
     best_regression = None
@@ -30,20 +37,34 @@ def calculate(
             for concentration in candidate.concentrations
         ]
 
-        regression = linear_regression(
-            candidate.times,
-            log_concentrations,
-        )
+        try:
+            regression = linear_regression(
+                candidate.times,
+                log_concentrations,
+            )
+        except Exception:
+            continue
 
         if regression.slope >= 0:
             continue
 
+        if (
+            regression.adjusted_r_squared
+            < MINIMUM_ADJUSTED_R2
+        ):
+            continue
+
         candidate.regression = regression
 
+        candidate.score = regression_score(
+            regression,
+            len(candidate.indices),
+        )
+
         if (
-            best_regression is None
-            or regression.adjusted_r_squared
-            > best_regression.adjusted_r_squared
+            best_candidate is None
+            or candidate.score
+            > best_candidate.score
         ):
             best_candidate = candidate
             best_regression = regression
@@ -69,6 +90,14 @@ def calculate(
             status="No valid terminal phase found",
         )
 
+    confidence = min(
+        100.0,
+        max(
+            0.0,
+            best_candidate.score / 10,
+        ),
+    )
+
     return LambdaZResult(
         lambda_z=-best_regression.slope,
         slope=best_regression.slope,
@@ -86,6 +115,6 @@ def calculate(
         terminal_concentrations=(
             best_candidate.concentrations
         ),
-        confidence=None,
+        confidence=confidence,
         status="Success",
     )

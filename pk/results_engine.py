@@ -14,6 +14,19 @@ from pk.nca.lambda_z import calculate as calculate_lambda_z
 from pk.nca.half_life import calculate as calculate_half_life
 from app.models.analysis_result import AnalysisResult
 
+from pk.nca.aumc import calculate as calculate_aumc
+from pk.nca.mrt import calculate as calculate_mrt
+from pk.nca.auc import calculate_auc_infinity
+
+
+from pk.nca.clearance import calculate as calculate_clearance
+from pk.nca.volume import calculate as calculate_volume
+from pk.nca.auc import (
+    calculate_extrapolated_auc,
+    calculate_extrapolated_percent,
+)
+
+
 
 
 class ResultsEngine:
@@ -54,6 +67,52 @@ class ResultsEngine:
         result.t_half = calculate_half_life(
             lambda_result.lambda_z
         )
+
+        result.aumc = calculate_aumc(
+            observations
+        )
+
+        result.mrt = calculate_mrt(
+            result.auc_0_t,
+            result.aumc,
+        )
+
+        last_concentration = (
+            observations[-1].concentration
+            if observations
+            else None
+        )
+
+        result.auc_0_inf = calculate_auc_infinity(
+            result.auc_0_t,
+            last_concentration,
+            result.lambda_z,
+        )
+
+        result.auc_extrapolated = (
+            calculate_extrapolated_auc(
+                result.auc_0_t,
+                result.auc_0_inf,
+            )
+        )
+
+        result.auc_extrapolated_percent = (
+            calculate_extrapolated_percent(
+                result.auc_0_t,
+                result.auc_0_inf,
+            )
+        )
+
+        result.cl = calculate_clearance(
+            self.project,
+            result.auc_0_inf,
+        )
+
+        result.vz = calculate_volume(
+            result.cl,
+            result.lambda_z,
+        )
+ 
 
         result.terminal_points = (
             lambda_result.terminal_indices
