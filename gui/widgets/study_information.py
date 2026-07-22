@@ -25,19 +25,22 @@ class StudyInformationWidget(QWidget):
         self._previous_concentration_unit = "ng/mL"
 
         layout = QGridLayout(self)
+        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setHorizontalSpacing(10)
+        layout.setVerticalSpacing(7)
         layout.setColumnStretch(1, 1)
-        layout.setColumnStretch(2, 0)
 
         self.study_name = QLineEdit()
         self.drug_name = QLineEdit()
         self.subject_id = QLineEdit()
         self.dose = QLineEdit()
         self.body_weight = QLineEdit()
-        self.comments = QTextEdit()
-        self.comments.setMaximumHeight(75)
 
-        self.dose_unit = QComboBox()
-        self.dose_unit.addItem("mg", "mg")
+        self.dose_unit = QLabel("mg")
+        self.dose_unit.setObjectName("fixedUnitLabel")
+
+        self.body_weight_unit = QLabel("kg")
+        self.body_weight_unit.setObjectName("fixedUnitLabel")
 
         self.concentration_unit = QComboBox()
         self.concentration_unit.addItem("ng/mL", "ng/mL")
@@ -46,9 +49,6 @@ class StudyInformationWidget(QWidget):
         self.time_unit = QComboBox()
         self.time_unit.addItem("Hours", "h")
         self.time_unit.addItem("Minutes", "min")
-
-        self.body_weight_unit = QComboBox()
-        self.body_weight_unit.addItem("kg", "kg")
 
         self.route = QComboBox()
         self.route.addItem("Oral", "Oral")
@@ -71,6 +71,9 @@ class StudyInformationWidget(QWidget):
             "log",
         )
 
+        self.comments = QTextEdit()
+        self.comments.setMaximumHeight(75)
+
         layout.addWidget(QLabel("Study Name"), 0, 0)
         layout.addWidget(self.study_name, 0, 1, 1, 2)
 
@@ -85,34 +88,82 @@ class StudyInformationWidget(QWidget):
         layout.addWidget(self.dose_unit, 3, 2)
 
         layout.addWidget(QLabel("Concentration Unit"), 4, 0)
-        layout.addWidget(self.concentration_unit, 4, 1, 1, 2)
+        layout.addWidget(
+            self.concentration_unit,
+            4,
+            1,
+            1,
+            2,
+        )
 
         layout.addWidget(QLabel("Time Unit"), 5, 0)
-        layout.addWidget(self.time_unit, 5, 1, 1, 2)
+        layout.addWidget(
+            self.time_unit,
+            5,
+            1,
+            1,
+            2,
+        )
 
         layout.addWidget(QLabel("Route"), 6, 0)
-        layout.addWidget(self.route, 6, 1, 1, 2)
+        layout.addWidget(
+            self.route,
+            6,
+            1,
+            1,
+            2,
+        )
 
         layout.addWidget(QLabel("AUC Method"), 7, 0)
-        layout.addWidget(self.auc_method, 7, 1, 1, 2)
+        layout.addWidget(
+            self.auc_method,
+            7,
+            1,
+            1,
+            2,
+        )
 
         layout.addWidget(QLabel("Body Weight"), 8, 0)
         layout.addWidget(self.body_weight, 8, 1)
-        layout.addWidget(self.body_weight_unit, 8, 2)
+        layout.addWidget(
+            self.body_weight_unit,
+            8,
+            2,
+        )
 
         layout.addWidget(QLabel("Remarks"), 9, 0)
-        layout.addWidget(self.comments, 9, 1, 1, 2)
+        layout.addWidget(
+            self.comments,
+            9,
+            1,
+            1,
+            2,
+        )
 
-        self.study_name.textChanged.connect(self.data_changed)
-        self.drug_name.textChanged.connect(self.data_changed)
-        self.subject_id.textChanged.connect(self.data_changed)
-        self.dose.textChanged.connect(self.data_changed)
-        self.body_weight.textChanged.connect(self.data_changed)
-        self.route.currentIndexChanged.connect(self.data_changed)
+        self.study_name.textChanged.connect(
+            self.data_changed
+        )
+        self.drug_name.textChanged.connect(
+            self.data_changed
+        )
+        self.subject_id.textChanged.connect(
+            self.data_changed
+        )
+        self.dose.textChanged.connect(
+            self.data_changed
+        )
+        self.body_weight.textChanged.connect(
+            self.data_changed
+        )
+        self.route.currentIndexChanged.connect(
+            self.data_changed
+        )
         self.auc_method.currentIndexChanged.connect(
             self.data_changed
         )
-        self.comments.textChanged.connect(self.data_changed)
+        self.comments.textChanged.connect(
+            self.data_changed
+        )
 
         self.time_unit.currentIndexChanged.connect(
             self._on_time_unit_changed
@@ -125,22 +176,31 @@ class StudyInformationWidget(QWidget):
         new_unit = str(self.time_unit.currentData())
         old_unit = self._previous_time_unit
 
-        if new_unit != old_unit:
-            self._previous_time_unit = new_unit
-            self.time_unit_changed.emit(old_unit, new_unit)
-            self.data_changed.emit()
+        if new_unit == old_unit:
+            return
+
+        self._previous_time_unit = new_unit
+        self.time_unit_changed.emit(
+            old_unit,
+            new_unit,
+        )
+        self.data_changed.emit()
 
     def _on_concentration_unit_changed(self) -> None:
-        new_unit = str(self.concentration_unit.currentData())
+        new_unit = str(
+            self.concentration_unit.currentData()
+        )
         old_unit = self._previous_concentration_unit
 
-        if new_unit != old_unit:
-            self._previous_concentration_unit = new_unit
-            self.concentration_unit_changed.emit(
-                old_unit,
-                new_unit,
-            )
-            self.data_changed.emit()
+        if new_unit == old_unit:
+            return
+
+        self._previous_concentration_unit = new_unit
+        self.concentration_unit_changed.emit(
+            old_unit,
+            new_unit,
+        )
+        self.data_changed.emit()
 
     def get_data(self) -> dict[str, str]:
         """
@@ -152,16 +212,22 @@ class StudyInformationWidget(QWidget):
             "drug_name": self.drug_name.text().strip(),
             "subject_id": self.subject_id.text().strip(),
             "dose": self.dose.text().strip(),
-            "dose_unit": str(self.dose_unit.currentData()),
+            "dose_unit": "mg",
             "concentration_unit": str(
                 self.concentration_unit.currentData()
             ),
-            "time_unit": str(self.time_unit.currentData()),
-            "body_weight": self.body_weight.text().strip(),
-            "body_weight_unit": str(
-                self.body_weight_unit.currentData()
+            "time_unit": str(
+                self.time_unit.currentData()
             ),
+            "body_weight": (
+                self.body_weight.text().strip()
+            ),
+            "body_weight_unit": "kg",
             "route": str(self.route.currentData()),
-            "auc_method": str(self.auc_method.currentData()),
-            "comments": self.comments.toPlainText().strip(),
+            "auc_method": str(
+                self.auc_method.currentData()
+            ),
+            "comments": (
+                self.comments.toPlainText().strip()
+            ),
         }
