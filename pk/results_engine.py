@@ -11,7 +11,11 @@ from pk.nca.auc import (
     calculate_extrapolated_auc,
     calculate_extrapolated_percent,
 )
-from pk.nca.aumc import calculate as calculate_aumc
+from pk.nca.aumc import (
+    calculate as calculate_aumc,
+    calculate_extrapolated as calculate_aumc_extrapolated,
+    calculate_infinity as calculate_aumc_infinity,
+)
 from pk.nca.clearance import calculate as calculate_clearance
 from pk.nca.cmax import calculate as calculate_cmax
 from pk.nca.half_life import calculate as calculate_half_life
@@ -52,11 +56,12 @@ class ResultsEngine:
         )
 
         result.aumc = calculate_aumc(observations)
-        result.mrt = calculate_mrt(
-            result.auc_0_t,
-            result.aumc,
-        )
 
+        last_time = (
+            observations[-1].time
+            if observations
+            else None
+        )
         last_concentration = (
             observations[-1].concentration
             if observations
@@ -68,19 +73,33 @@ class ResultsEngine:
             last_concentration,
             result.lambda_z,
         )
-
         result.auc_extrapolated = (
             calculate_extrapolated_auc(
                 result.auc_0_t,
                 result.auc_0_inf,
             )
         )
-
         result.auc_extrapolated_percent = (
             calculate_extrapolated_percent(
                 result.auc_0_t,
                 result.auc_0_inf,
             )
+        )
+
+        result.aumc_extrapolated = (
+            calculate_aumc_extrapolated(
+                last_time,
+                last_concentration,
+                result.lambda_z,
+            )
+        )
+        result.aumc_0_inf = calculate_aumc_infinity(
+            result.aumc,
+            result.aumc_extrapolated,
+        )
+        result.mrt = calculate_mrt(
+            result.auc_0_inf,
+            result.aumc_0_inf,
         )
 
         result.cl = calculate_clearance(
@@ -92,6 +111,15 @@ class ResultsEngine:
             result.lambda_z,
         )
 
+        if (
+            result.vz is not None
+            and self.project.body_weight is not None
+            and self.project.body_weight > 0
+        ):
+            result.vd_per_kg = (
+                result.vz / self.project.body_weight
+            )
+
         result.terminal_points = (
             lambda_result.terminal_indices
         )
@@ -101,9 +129,7 @@ class ResultsEngine:
         result.terminal_concentrations = (
             lambda_result.terminal_concentrations
         )
-        result.terminal_r_squared = (
-            lambda_result.r_squared
-        )
+        result.terminal_r_squared = lambda_result.r_squared
         result.terminal_adjusted_r_squared = (
             lambda_result.adjusted_r_squared
         )
@@ -129,10 +155,6 @@ class ResultsEngine:
         return result
 
     def _get_auc_method(self) -> AUCMethod:
-        """
-        Return the selected AUC calculation method.
-        """
-
         try:
             return AUCMethod(self.project.auc_method)
         except ValueError:

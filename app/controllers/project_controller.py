@@ -28,10 +28,6 @@ class ProjectController(QObject):
         self,
         table_data: list[ObservationInput],
     ) -> None:
-        """
-        Update observations from the data table.
-        """
-
         self.project.observations.clear()
         self.validation_errors.clear()
 
@@ -56,16 +52,33 @@ class ProjectController(QObject):
         self,
         data: dict[str, str],
     ) -> None:
-        """
-        Update project study, dosing and analysis settings.
-        """
-
         self.project.study_name = data["study_name"]
         self.project.drug_name = data["drug_name"]
         self.project.subject_id = data["subject_id"]
         self.project.route = data["route"]
         self.project.auc_method = data["auc_method"]
         self.project.comments = data["comments"]
+
+        self.project.units.dose = data["dose_unit"]
+        self.project.units.concentration = (
+            data["concentration_unit"]
+        )
+        self.project.units.time = data["time_unit"]
+        self.project.units.body_weight = (
+            data["body_weight_unit"]
+        )
+
+        self.project.units.clearance = (
+            f"L/{self.project.units.time}"
+        )
+        self.project.units.auc = (
+            f"{self.project.units.concentration}"
+            f"·{self.project.units.time}"
+        )
+        self.project.units.aumc = (
+            f"{self.project.units.concentration}"
+            f"·{self.project.units.time}²"
+        )
 
         self.project.dose = self._optional_positive_float(
             data["dose"]
@@ -77,10 +90,6 @@ class ProjectController(QObject):
         self._refresh_analysis()
 
     def _refresh_analysis(self) -> None:
-        """
-        Validate and analyze the current project.
-        """
-
         self.project_validation = self.validator.validate(
             self.project
         )
@@ -98,10 +107,6 @@ class ProjectController(QObject):
     def _optional_positive_float(
         value: str,
     ) -> float | None:
-        """
-        Convert optional positive numeric text.
-        """
-
         if value == "":
             return None
 

@@ -1,0 +1,33 @@
+to make backup use
+
+zip -r PKinetix_backup_$(date +%Y-%m-%d_%H-%M).zip . \
+-x ".venv/*" \
+-x ".git/*" \
+-x "__pycache__/*" \
+-x "*.pyc" \
+-x ".DS_Store" \
+-x "PKinetix_backup*.zip"
+
+if want without data then this
+
+
+zip -r PKinetix_backup.zip . \
+-x ".venv/*" \
+-x ".git/*" \
+-x "__pycache__/*" \
+-x "*.pyc" \
+-x ".DS_Store" \
+-x "PKinetix_backup*.zip"
+
+
+
+
+
+to view the whole structure
+tree -a -I ".venv|__pycache__|.git|.DS_Store"
+
+
+to save tree file
+
+tree -a -I ".venv|__pycache__|.git|.DS_Store" > project_tree.txt
+

@@ -1,0 +1,88 @@
+.
+├── .gitignore
+├── Commands.txt
+├── PKinetix_backup_2026-07-22_16-24.zip
+├── README.md
+├── app
+│   ├── controllers
+│   │   ├── __init__.py
+│   │   ├── plot_controller.py
+│   │   └── project_controller.py
+│   ├── models
+│   │   ├── __init__.py
+│   │   ├── analysis_result.py
+│   │   ├── lambda_z_result.py
+│   │   ├── observation.py
+│   │   ├── project.py
+│   │   ├── regression_result.py
+│   │   ├── terminal_phase_candidate.py
+│   │   ├── units.py
+│   │   ├── validation_issue.py
+│   │   └── validation_result.py
+│   ├── services
+│   │   ├── __init__.py
+│   │   └── data_validator.py
+│   └── state
+│       ├── __init__.py
+│       └── application_state.py
+├── assets
+│   ├── icons
+│   └── logo
+├── docs
+├── gui
+│   ├── __init__.py
+│   ├── main_window.py
+│   └── widgets
+│       ├── data_table.py
+│       ├── graph_widget.py
+│       ├── plotting
+│       │   ├── __init__.py
+│       │   └── plot_canvas.py
+│       ├── results_widget.py
+│       └── study_information.py
+├── io
+├── main.py
+├── pk
+│   ├── __init__.py
+│   ├── analysis_engine.py
+│   ├── analysis_manager.py
+│   ├── common
+│   │   ├── __init__.py
+│   │   ├── goodness_of_fit.py
+│   │   ├── interpolation.py
+│   │   ├── regression.py
+│   │   ├── statistics.py
+│   │   └── validation.py
+│   ├── compartmental
+│   │   ├── __init__.py
+│   │   ├── fitting.py
+│   │   ├── goodness_of_fit.py
+│   │   ├── model_selection.py
+│   │   ├── models
+│   │   │   ├── one_compartment.py
+│   │   │   ├── three_compartment.py
+│   │   │   └── two_compartment.py
+│   │   ├── optimizer.py
+│   │   └── predicted_concentrations.py
+│   ├── nca
+│   │   ├── __init__.py
+│   │   ├── auc.py
+│   │   ├── aumc.py
+│   │   ├── clearance.py
+│   │   ├── cmax.py
+│   │   ├── half_life.py
+│   │   ├── lambda_z.py
+│   │   ├── mrt.py
+│   │   ├── terminal_phase.py
+│   │   ├── tmax.py
+│   │   └── volume.py
+│   ├── plotting
+│   │   ├── __init__.py
+│   │   └── plot_helpers.py
+│   └── results_engine.py
+├── project_tree.txt
+├── reports
+├── requirements.txt
+└── tests
+
+22 directories, 64 files

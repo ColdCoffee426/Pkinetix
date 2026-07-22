@@ -1,7 +1,10 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QGroupBox,
+    QFrame,
+    QHBoxLayout,
+    QLabel,
     QMainWindow,
+    QScrollArea,
     QSizePolicy,
     QSplitter,
     QVBoxLayout,
@@ -12,7 +15,10 @@ from app.controllers.project_controller import ProjectController
 from app.state.application_state import ApplicationState
 from gui.widgets.data_table import DataTableWidget
 from gui.widgets.graph_widget import GraphWidget
-from gui.widgets.results_widget import ResultsWidget
+from gui.widgets.results_widget import (
+    GoodnessOfFitWidget,
+    ResultsWidget,
+)
 from gui.widgets.study_information import StudyInformationWidget
 from pk.analysis_engine import AnalysisEngine
 
@@ -33,8 +39,8 @@ class MainWindow(QMainWindow):
             self.application_state.project
         )
 
-        self.setWindowTitle("PKinetix")
-        self.resize(1400, 900)
+        self.setWindowTitle("PKinetix lite")
+        self.resize(1500, 900)
 
         self._create_central_widget()
         self._create_layout()
@@ -50,73 +56,170 @@ class MainWindow(QMainWindow):
         self.main_layout = QVBoxLayout(
             self.central_widget
         )
-        self.main_layout.setContentsMargins(6, 6, 6, 6)
+        self.main_layout.setContentsMargins(7, 7, 7, 7)
+        self.main_layout.setSpacing(7)
 
     def _create_layout(self) -> None:
+        self.main_layout.addWidget(
+            self._create_brand_header()
+        )
+
         self.study_information = StudyInformationWidget()
+        self.data_table = DataTableWidget()
         self.graph = GraphWidget()
         self.results = ResultsWidget()
-        self.data_table = DataTableWidget()
+        self.goodness_of_fit = GoodnessOfFitWidget()
 
-        study_panel = self._create_panel(
-            "Study Information",
-            self.study_information,
-        )
-        graph_panel = self._create_panel(
-            "Concentration-Time Plot",
-            self.graph,
-        )
-        table_panel = self._create_panel(
-            "Concentration-Time Data",
-            self.data_table,
-        )
-        results_panel = self._create_panel(
-            "Results",
-            self.results,
-        )
+        input_widget = self._create_input_widget()
+        center_widget = self._create_center_widget()
 
-        study_panel.setMinimumWidth(250)
-        graph_panel.setMinimumWidth(420)
-        table_panel.setMinimumWidth(340)
+        input_widget.setMinimumWidth(390)
+        center_widget.setMinimumWidth(560)
+        self.results.setMinimumWidth(350)
 
-        for panel in (
-            study_panel,
-            graph_panel,
-            table_panel,
-        ):
-            panel.setMinimumHeight(0)
-            panel.setSizePolicy(
-                QSizePolicy.Preferred,
-                QSizePolicy.Expanding,
-            )
+        self.workspace_splitter = QSplitter(
+            Qt.Horizontal
+        )
+        self.workspace_splitter.addWidget(input_widget)
+        self.workspace_splitter.addWidget(center_widget)
+        self.workspace_splitter.addWidget(self.results)
 
-        results_panel.setMinimumHeight(120)
-        results_panel.setSizePolicy(
-            QSizePolicy.Expanding,
-            QSizePolicy.Expanding,
+        self.workspace_splitter.setStretchFactor(0, 3)
+        self.workspace_splitter.setStretchFactor(1, 5)
+        self.workspace_splitter.setStretchFactor(2, 3)
+
+        self.workspace_splitter.setChildrenCollapsible(
+            False
+        )
+        self.workspace_splitter.setSizes([
+            430,
+            700,
+            370,
+        ])
+        self.workspace_splitter.setHandleWidth(7)
+
+        self.main_layout.addWidget(
+            self.workspace_splitter,
+            1,
         )
 
-        self.top_splitter = QSplitter(Qt.Horizontal)
-        self.top_splitter.addWidget(study_panel)
-        self.top_splitter.addWidget(graph_panel)
-        self.top_splitter.addWidget(table_panel)
-        self.top_splitter.setStretchFactor(0, 2)
-        self.top_splitter.setStretchFactor(1, 5)
-        self.top_splitter.setStretchFactor(2, 3)
-        self.top_splitter.setChildrenCollapsible(False)
-        self.top_splitter.setSizes([270, 700, 430])
-        self.top_splitter.setHandleWidth(7)
+    def _create_input_widget(self) -> QWidget:
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(6)
 
-        self.main_splitter = QSplitter(Qt.Vertical)
-        self.main_splitter.addWidget(self.top_splitter)
-        self.main_splitter.addWidget(results_panel)
-        self.main_splitter.setStretchFactor(0, 7)
-        self.main_splitter.setStretchFactor(1, 3)
-        self.main_splitter.setChildrenCollapsible(False)
-        self.main_splitter.setSizes([650, 230])
-        self.main_splitter.setHandleWidth(8)
+        input_heading = QLabel("INPUT")
+        input_heading.setObjectName("majorHeading")
+        input_heading.setAlignment(Qt.AlignCenter)
+        input_heading.setMinimumHeight(34)
 
-        self.main_layout.addWidget(self.main_splitter)
+        layout.addWidget(input_heading)
+
+        study_scroll = QScrollArea()
+        study_scroll.setWidgetResizable(True)
+        study_scroll.setFrameShape(QScrollArea.NoFrame)
+        study_scroll.setWidget(
+            self.study_information
+        )
+
+        table_container = QWidget()
+        table_layout = QVBoxLayout(table_container)
+        table_layout.setContentsMargins(0, 0, 0, 0)
+        table_layout.setSpacing(5)
+
+        table_heading = QLabel(
+            "CONCENTRATION-TIME DATA"
+        )
+        table_heading.setObjectName("sectionHeading")
+        table_heading.setAlignment(Qt.AlignCenter)
+        table_heading.setMinimumHeight(30)
+
+        table_layout.addWidget(table_heading)
+        table_layout.addWidget(self.data_table, 1)
+
+        self.input_splitter = QSplitter(Qt.Vertical)
+        self.input_splitter.addWidget(study_scroll)
+        self.input_splitter.addWidget(table_container)
+        self.input_splitter.setStretchFactor(0, 4)
+        self.input_splitter.setStretchFactor(1, 5)
+        self.input_splitter.setChildrenCollapsible(
+            False
+        )
+        self.input_splitter.setSizes([360, 440])
+        self.input_splitter.setHandleWidth(7)
+
+        layout.addWidget(self.input_splitter, 1)
+
+        return widget
+
+    def _create_center_widget(self) -> QWidget:
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        graph_container = QWidget()
+        graph_layout = QVBoxLayout(graph_container)
+        graph_layout.setContentsMargins(0, 0, 0, 0)
+        graph_layout.setSpacing(5)
+
+        graph_heading = QLabel(
+            "CONCENTRATION-TIME PROFILE"
+        )
+        graph_heading.setObjectName("majorHeading")
+        graph_heading.setAlignment(Qt.AlignCenter)
+        graph_heading.setMinimumHeight(34)
+
+        graph_layout.addWidget(graph_heading)
+        graph_layout.addWidget(self.graph, 1)
+
+        self.center_splitter = QSplitter(Qt.Vertical)
+        self.center_splitter.addWidget(graph_container)
+        self.center_splitter.addWidget(
+            self.goodness_of_fit
+        )
+        self.center_splitter.setStretchFactor(0, 7)
+        self.center_splitter.setStretchFactor(1, 3)
+        self.center_splitter.setChildrenCollapsible(
+            False
+        )
+        self.center_splitter.setSizes([610, 230])
+        self.center_splitter.setHandleWidth(7)
+
+        layout.addWidget(self.center_splitter)
+
+        return widget
+
+    def _create_brand_header(self) -> QFrame:
+        frame = QFrame()
+        frame.setObjectName("brandHeader")
+        frame.setMinimumHeight(55)
+
+        layout = QHBoxLayout(frame)
+        layout.setContentsMargins(14, 6, 14, 6)
+
+        software_name = QLabel("PKinetix lite")
+        software_name.setObjectName("softwareName")
+        software_name.setAlignment(
+            Qt.AlignLeft | Qt.AlignVCenter
+        )
+
+        copyright_label = QLabel(
+            "© Nadeem Irfan Bukhari  |  "
+            "Email: nadeem_irfan@hotmail.com"
+        )
+        copyright_label.setObjectName(
+            "copyrightLabel"
+        )
+        copyright_label.setAlignment(
+            Qt.AlignRight | Qt.AlignVCenter
+        )
+
+        layout.addWidget(software_name)
+        layout.addStretch()
+        layout.addWidget(copyright_label)
+
+        return frame
 
     def _connect_signals(self) -> None:
         self.data_table.data_changed.connect(
@@ -125,123 +228,191 @@ class MainWindow(QMainWindow):
         self.study_information.data_changed.connect(
             self._on_study_information_changed
         )
+        self.study_information.time_unit_changed.connect(
+            self.data_table.convert_time_unit
+        )
+        self.study_information.concentration_unit_changed.connect(
+            self.data_table.convert_concentration_unit
+        )
         self.project_controller.project_changed.connect(
             self._project_changed
         )
 
-    def _create_panel(
-        self,
-        title: str,
-        widget: QWidget,
-    ) -> QGroupBox:
-        panel = QGroupBox(title)
+    def _on_data_changed(self) -> None:
+        self.project_controller.update_observations(
+            self.data_table.get_data()
+        )
 
-        layout = QVBoxLayout(panel)
-        layout.setContentsMargins(8, 14, 8, 8)
-        layout.addWidget(widget)
+    def _on_study_information_changed(self) -> None:
+        self.project_controller.update_study_information(
+            self.study_information.get_data()
+        )
 
-        return panel
+    def _project_changed(self) -> None:
+        time, concentration = (
+            self.analysis_engine.get_plot_data()
+        )
+
+        results = (
+            self.project_controller.analysis_result
+        )
+
+        if results is None:
+            self.graph.plot_profile(
+                time,
+                concentration,
+            )
+            self.results.clear_results()
+            self.goodness_of_fit.clear_results()
+        else:
+            self.graph.plot_profile(
+                time,
+                concentration,
+                fitted_time=(
+                    results.fitted_terminal_times
+                ),
+                fitted_concentration=(
+                    results.fitted_terminal_concentrations
+                ),
+                highlighted_time=(
+                    results.terminal_times
+                ),
+                highlighted_concentration=(
+                    results.terminal_concentrations
+                ),
+            )
+            self.results.update_results(results)
+            self.goodness_of_fit.update_results(
+                results
+            )
+
+        self.statusBar().showMessage(
+            f"{len(time)} observations loaded"
+        )
 
     def _apply_theme(self) -> None:
-        """
-        Apply the PKinetix teal-blue interface theme.
-        """
-
         self.setStyleSheet("""
             QMainWindow,
             QWidget {
-                background-color: #17242b;
-                color: #dbe7eb;
+                background-color: #2b414a;
+                color: #edf6f7;
                 font-size: 13px;
             }
 
-            QGroupBox {
-                background-color: #1d3038;
-                border: 1px solid #2f6671;
-                border-radius: 6px;
-                margin-top: 10px;
-                padding-top: 7px;
-                font-weight: 600;
+            #brandHeader {
+                background-color: #36545d;
+                border: 1px solid #65b9c1;
+                border-radius: 4px;
             }
 
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                subcontrol-position: top left;
-                left: 10px;
-                padding: 0 5px;
-                color: #80d0d4;
-                background-color: #1d3038;
+            #softwareName {
+                color: #bfeef1;
+                font-size: 22px;
+                font-weight: 700;
+                background-color: transparent;
+            }
+
+            #copyrightLabel {
+                color: #d6e8eb;
+                background-color: transparent;
+                font-size: 12px;
+            }
+
+            #majorHeading {
+                background-color: #684d70;
+                border: 1px solid #c27bcc;
+                color: #f6e8f7;
+                font-weight: 700;
+                letter-spacing: 1px;
+                border-radius: 3px;
+            }
+
+            #sectionHeading {
+                background-color: #5b4966;
+                border: 1px solid #b879c3;
+                color: #f4e7f6;
+                font-weight: 700;
+                border-radius: 3px;
             }
 
             QLineEdit,
             QTextEdit,
             QComboBox {
-                background-color: #223942;
-                color: #e6f1f3;
-                border: 1px solid #356c78;
-                border-radius: 4px;
+                background-color: #38545d;
+                color: #f2f8f9;
+                border: 1px solid #68aeb6;
+                border-radius: 3px;
                 padding: 5px;
-                selection-background-color: #236d83;
             }
 
             QLineEdit:focus,
             QTextEdit:focus,
             QComboBox:focus {
-                border: 1px solid #54b8c1;
+                border: 1px solid #87d4d9;
+                background-color: #3f6069;
             }
 
             QComboBox QAbstractItemView {
-                background-color: #223942;
-                color: #e6f1f3;
-                selection-background-color: #245f7a;
+                background-color: #38545d;
+                color: #f2f8f9;
+                selection-background-color: #579da7;
             }
 
             QTableWidget {
-                background-color: #1b2d35;
-                alternate-background-color: #203842;
-                color: #e2edf0;
-                gridline-color: #365d68;
-                border: 1px solid #315e69;
-                selection-background-color: #245f7a;
-                selection-color: #ffffff;
+                background-color: #324b53;
+                alternate-background-color: #38545d;
+                color: #f2f8f9;
+                gridline-color: #72b7be;
+                border: 1px solid #68aeb6;
+                selection-background-color: #579da7;
+                selection-color: white;
             }
 
             QHeaderView::section {
-                background-color: #214d5b;
-                color: #e7f4f5;
-                border: 1px solid #387381;
+                background-color: #566270;
+                color: #f6e8f7;
+                border: 1px solid #b879c3;
                 padding: 6px;
+                font-weight: 700;
+            }
+
+            #resultValue {
+                background-color: #3c5962;
+                border: 1px solid #72b7be;
+                border-radius: 2px;
+                padding: 4px 8px;
+                color: #c8f2f4;
                 font-weight: 600;
             }
 
-            QTableCornerButton::section {
-                background-color: #214d5b;
-                border: 1px solid #387381;
-            }
-
             QSplitter::handle {
-                background-color: #28566a;
+                background-color: #5da6af;
             }
 
             QSplitter::handle:hover {
-                background-color: #3c8191;
+                background-color: #84d0d5;
+            }
+
+            QScrollArea {
+                border: none;
+                background-color: transparent;
             }
 
             QScrollBar:vertical,
             QScrollBar:horizontal {
-                background-color: #172a32;
+                background-color: #314951;
                 border: none;
             }
 
             QScrollBar::handle {
-                background-color: #356c78;
-                border-radius: 4px;
+                background-color: #65aeb7;
+                border-radius: 3px;
                 min-width: 20px;
                 min-height: 20px;
             }
 
             QScrollBar::handle:hover {
-                background-color: #438ba0;
+                background-color: #83cbd1;
             }
 
             QScrollBar::add-line,
@@ -251,52 +422,12 @@ class MainWindow(QMainWindow):
             }
 
             QStatusBar {
-                background-color: #15313f;
-                color: #9dd7df;
-                border-top: 1px solid #2e6370;
+                background-color: #36545d;
+                color: #c8f2f4;
+                border-top: 1px solid #68aeb6;
             }
 
             QLabel {
                 background-color: transparent;
             }
         """)
-
-    def _on_data_changed(self) -> None:
-        data = self.data_table.get_data()
-        self.project_controller.update_observations(data)
-
-    def _on_study_information_changed(self) -> None:
-        data = self.study_information.get_data()
-        self.project_controller.update_study_information(data)
-
-    def _project_changed(self) -> None:
-        time, concentration = (
-            self.analysis_engine.get_plot_data()
-        )
-
-        results = self.project_controller.analysis_result
-
-        if results is None:
-            self.graph.plot_profile(
-                time,
-                concentration,
-            )
-            self.results.clear_results()
-        else:
-            self.graph.plot_profile(
-                time,
-                concentration,
-                fitted_time=results.fitted_terminal_times,
-                fitted_concentration=(
-                    results.fitted_terminal_concentrations
-                ),
-                highlighted_time=results.terminal_times,
-                highlighted_concentration=(
-                    results.terminal_concentrations
-                ),
-            )
-            self.results.update_results(results)
-
-        self.statusBar().showMessage(
-            f"{len(time)} observations loaded"
-        )

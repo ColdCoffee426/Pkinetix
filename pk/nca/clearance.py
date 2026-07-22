@@ -6,22 +6,25 @@ def calculate(
     auc_0_inf: float | None,
 ) -> float | None:
     """
-    Calculate clearance.
+    Calculate clearance in L per selected time unit.
 
-    IV:
-        CL = Dose / AUC∞
-
-    Extravascular:
-        CL/F = Dose / AUC∞
+    Dose is currently stored in mg.
     """
 
-    if auc_0_inf is None:
+    if (
+        project.dose is None
+        or project.dose <= 0
+        or auc_0_inf is None
+        or auc_0_inf <= 0
+    ):
         return None
 
-    if auc_0_inf <= 0:
-        return None
+    concentration_unit = project.units.concentration
 
-    if project.dose is None:
-        return None
+    if concentration_unit == "ng/mL":
+        return project.dose * 1000 / auc_0_inf
 
-    return project.dose / auc_0_inf
+    if concentration_unit == "µg/mL":
+        return project.dose / auc_0_inf
+
+    return None

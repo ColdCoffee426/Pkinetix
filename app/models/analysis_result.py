@@ -7,7 +7,6 @@ class AnalysisResult:
     Stores the complete results of a pharmacokinetic analysis.
     """
 
-    # NCA Parameters
     cmax: float | None = None
     tmax: float | None = None
 
@@ -20,20 +19,18 @@ class AnalysisResult:
     auc_extrapolated_percent: float | None = None
 
     aumc: float | None = None
+    aumc_extrapolated: float | None = None
+    aumc_0_inf: float | None = None
     mrt: float | None = None
 
     cl: float | None = None
     vz: float | None = None
+    vd_per_kg: float | None = None
 
-    # Terminal Phase Information
     terminal_points: list[int] = field(default_factory=list)
-    terminal_times: list[float] = field(
-        default_factory=list
-    )
+    terminal_times: list[float] = field(default_factory=list)
+    terminal_concentrations: list[float] = field(default_factory=list)
 
-    terminal_concentrations: list[float] = field(
-        default_factory=list
-    )
     terminal_rmse: float | None = None
     terminal_mae: float | None = None
     terminal_bias: float | None = None
@@ -44,31 +41,14 @@ class AnalysisResult:
     terminal_bic: float | None = None
     terminal_confidence: float | None = None
 
-    terminal_rmse: float | None = None
-    terminal_mae: float | None = None
-    terminal_bias: float | None = None
-
-    fitted_terminal_times: list[float] = field(
-        default_factory=list
-    )
-
+    fitted_terminal_times: list[float] = field(default_factory=list)
     fitted_terminal_concentrations: list[float] = field(
         default_factory=list
     )
 
-    fitted_terminal_times: list[float] = field(
-        default_factory=list
-    )
-
-    fitted_terminal_concentrations: list[float] = field(
-        default_factory=list
-    )
-
-    # Analysis Information
     analysis_mode: str = "NCA"
     route: str | None = None
 
-    # Messages
     warnings: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
 
