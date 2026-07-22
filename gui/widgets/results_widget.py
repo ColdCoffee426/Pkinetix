@@ -1,5 +1,6 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
+    QFrame,
     QGridLayout,
     QLabel,
     QScrollArea,
@@ -44,7 +45,8 @@ class ResultsWidget(QWidget):
 
         content = QWidget()
         content_layout = QVBoxLayout(content)
-        content_layout.setContentsMargins(8, 8, 8, 8)
+        content_layout.setContentsMargins(10, 6, 10, 10)
+        content_layout.setSpacing(0)
         content_layout.setAlignment(Qt.AlignTop)
 
         parameters = [
@@ -68,42 +70,60 @@ class ResultsWidget(QWidget):
             ("Clearance", "cl"),
         ]
 
-        content_layout.addLayout(
-            self._create_result_grid(parameters)
-        )
+        for index, parameter in enumerate(parameters):
+            content_layout.addWidget(
+                self._create_result_row(*parameter)
+            )
+
+            if index < len(parameters) - 1:
+                content_layout.addWidget(
+                    self._create_separator()
+                )
 
         scroll_area.setWidget(content)
         layout.addWidget(scroll_area)
 
-    def _create_result_grid(
+    def _create_result_row(
         self,
-        parameters: list[tuple[str, str]],
-    ) -> QGridLayout:
-        layout = QGridLayout()
-        layout.setHorizontalSpacing(12)
-        layout.setVerticalSpacing(5)
+        title: str,
+        attribute: str,
+    ) -> QWidget:
+        row_widget = QWidget()
+        row_widget.setObjectName("resultRow")
+
+        layout = QGridLayout(row_widget)
+        layout.setContentsMargins(4, 6, 4, 6)
         layout.setColumnStretch(0, 1)
 
-        for row, (title, attribute) in enumerate(parameters):
-            title_label = QLabel(title)
-            title_label.setTextFormat(Qt.RichText)
-            title_label.setAlignment(
-                Qt.AlignLeft | Qt.AlignVCenter
-            )
+        title_label = QLabel(title)
+        title_label.setTextFormat(Qt.RichText)
+        title_label.setAlignment(
+            Qt.AlignLeft | Qt.AlignVCenter
+        )
 
-            value_label = QLabel("--")
-            value_label.setObjectName("resultValue")
-            value_label.setAlignment(
-                Qt.AlignRight | Qt.AlignVCenter
-            )
-            value_label.setMinimumWidth(95)
+        value_label = QLabel("--")
+        value_label.setObjectName("plainResultValue")
+        value_label.setAlignment(
+            Qt.AlignRight | Qt.AlignVCenter
+        )
+        value_label.setMinimumWidth(95)
 
-            self.labels[attribute] = value_label
+        self.labels[attribute] = value_label
 
-            layout.addWidget(title_label, row, 0)
-            layout.addWidget(value_label, row, 1)
+        layout.addWidget(title_label, 0, 0)
+        layout.addWidget(value_label, 0, 1)
 
-        return layout
+        return row_widget
+
+    @staticmethod
+    def _create_separator() -> QFrame:
+        line = QFrame()
+        line.setObjectName("resultSeparator")
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Plain)
+        line.setFixedHeight(1)
+
+        return line
 
     def clear_results(self) -> None:
         for label in self.labels.values():
@@ -147,10 +167,9 @@ class GoodnessOfFitWidget(QWidget):
         layout.addWidget(heading)
 
         content = QWidget()
-        grid = QGridLayout(content)
-        grid.setContentsMargins(10, 8, 10, 8)
-        grid.setHorizontalSpacing(12)
-        grid.setVerticalSpacing(6)
+        content_layout = QVBoxLayout(content)
+        content_layout.setContentsMargins(10, 5, 10, 8)
+        content_layout.setSpacing(0)
 
         statistics = [
             ("R²", "terminal_r_squared"),
@@ -164,38 +183,65 @@ class GoodnessOfFitWidget(QWidget):
             ("MAE", "terminal_mae"),
         ]
 
-        columns = 3
-
-        for index, (title, attribute) in enumerate(
-            statistics
-        ):
-            row = index // columns
-            column = (index % columns) * 2
-
-            title_label = QLabel(title)
-            title_label.setAlignment(
-                Qt.AlignLeft | Qt.AlignVCenter
+        rows = [
+            statistics[index:index + 3]
+            for index in range(
+                0,
+                len(statistics),
+                3,
             )
+        ]
 
-            value_label = QLabel("--")
-            value_label.setObjectName("resultValue")
-            value_label.setAlignment(
-                Qt.AlignRight | Qt.AlignVCenter
-            )
-            value_label.setMinimumWidth(90)
+        for row_index, row_items in enumerate(rows):
+            row_widget = QWidget()
+            row_layout = QGridLayout(row_widget)
+            row_layout.setContentsMargins(4, 6, 4, 6)
+            row_layout.setHorizontalSpacing(12)
 
-            self.labels[attribute] = value_label
+            for index, (title, attribute) in enumerate(
+                row_items
+            ):
+                title_column = index * 2
+                value_column = title_column + 1
 
-            grid.addWidget(title_label, row, column)
-            grid.addWidget(
-                value_label,
-                row,
-                column + 1,
-            )
+                title_label = QLabel(title)
+                title_label.setAlignment(
+                    Qt.AlignLeft | Qt.AlignVCenter
+                )
 
-        for column in range(columns * 2):
-            if column % 2 == 0:
-                grid.setColumnStretch(column, 1)
+                value_label = QLabel("--")
+                value_label.setObjectName(
+                    "plainResultValue"
+                )
+                value_label.setAlignment(
+                    Qt.AlignRight | Qt.AlignVCenter
+                )
+                value_label.setMinimumWidth(82)
+
+                self.labels[attribute] = value_label
+
+                row_layout.addWidget(
+                    title_label,
+                    0,
+                    title_column,
+                )
+                row_layout.addWidget(
+                    value_label,
+                    0,
+                    value_column,
+                )
+
+                row_layout.setColumnStretch(
+                    title_column,
+                    1,
+                )
+
+            content_layout.addWidget(row_widget)
+
+            if row_index < len(rows) - 1:
+                content_layout.addWidget(
+                    ResultsWidget._create_separator()
+                )
 
         layout.addWidget(content)
 
