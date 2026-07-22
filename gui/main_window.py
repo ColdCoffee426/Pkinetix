@@ -184,4 +184,5 @@ class MainWindow(QMainWindow):
 
         self.statusBar().showMessage(
             f"{len(time)} observations loaded"
+            
         )
