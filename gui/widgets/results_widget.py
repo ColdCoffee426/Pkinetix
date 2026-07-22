@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
 )
 
 from app.models.analysis_result import AnalysisResult
+from app.models.units import Units
 
 
 class ResultsWidget(QWidget):
@@ -20,6 +21,7 @@ class ResultsWidget(QWidget):
         super().__init__()
 
         self.labels: dict[str, QLabel] = {}
+        self.unit_labels: dict[str, QLabel] = {}
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -28,7 +30,7 @@ class ResultsWidget(QWidget):
         heading = QLabel("OUTPUT")
         heading.setObjectName("majorHeading")
         heading.setAlignment(Qt.AlignCenter)
-        heading.setMinimumHeight(34)
+        heading.setFixedHeight(36)
         layout.addWidget(heading)
 
         section_heading = QLabel(
@@ -36,7 +38,7 @@ class ResultsWidget(QWidget):
         )
         section_heading.setObjectName("sectionHeading")
         section_heading.setAlignment(Qt.AlignCenter)
-        section_heading.setMinimumHeight(30)
+        section_heading.setFixedHeight(36)
         layout.addWidget(section_heading)
 
         scroll_area = QScrollArea()
@@ -56,7 +58,7 @@ class ResultsWidget(QWidget):
             ("AUC Extrapolated", "auc_extrapolated"),
             ("AUC 0-inf", "auc_0_inf"),
             (
-                "Sample Adequacy Factor (%)",
+                "Sample Adequacy Factor",
                 "auc_extrapolated_percent",
             ),
             ("AUMC 0-t", "aumc"),
@@ -83,6 +85,8 @@ class ResultsWidget(QWidget):
         scroll_area.setWidget(content)
         layout.addWidget(scroll_area)
 
+        self.update_units(Units())
+
     def _create_result_row(
         self,
         title: str,
@@ -93,7 +97,11 @@ class ResultsWidget(QWidget):
 
         layout = QGridLayout(row_widget)
         layout.setContentsMargins(4, 6, 4, 6)
-        layout.setColumnStretch(0, 1)
+        layout.setHorizontalSpacing(8)
+
+        layout.setColumnStretch(0, 5)
+        layout.setColumnStretch(1, 2)
+        layout.setColumnStretch(2, 2)
 
         title_label = QLabel(title)
         title_label.setTextFormat(Qt.RichText)
@@ -106,12 +114,22 @@ class ResultsWidget(QWidget):
         value_label.setAlignment(
             Qt.AlignRight | Qt.AlignVCenter
         )
-        value_label.setMinimumWidth(95)
+        value_label.setMinimumWidth(72)
+        value_label.setMaximumWidth(105)
+
+        unit_label = QLabel("")
+        unit_label.setObjectName("resultUnit")
+        unit_label.setAlignment(
+            Qt.AlignLeft | Qt.AlignVCenter
+        )
+        unit_label.setMinimumWidth(64)
 
         self.labels[attribute] = value_label
+        self.unit_labels[attribute] = unit_label
 
         layout.addWidget(title_label, 0, 0)
         layout.addWidget(value_label, 0, 1)
+        layout.addWidget(unit_label, 0, 2)
 
         return row_widget
 
@@ -122,8 +140,36 @@ class ResultsWidget(QWidget):
         line.setFrameShape(QFrame.HLine)
         line.setFrameShadow(QFrame.Plain)
         line.setFixedHeight(1)
-
         return line
+
+    def update_units(
+        self,
+        units: Units,
+    ) -> None:
+        """
+        Update displayed units after unit selection changes.
+        """
+
+        unit_map = {
+            "cmax": units.concentration,
+            "tmax": units.time,
+            "auc_0_t": units.auc,
+            "auc_extrapolated": units.auc,
+            "auc_0_inf": units.auc,
+            "auc_extrapolated_percent": "%",
+            "aumc": units.aumc,
+            "aumc_extrapolated": units.aumc,
+            "aumc_0_inf": units.aumc,
+            "mrt": units.time,
+            "vz": units.volume,
+            "vd_per_kg": f"{units.volume}/kg",
+            "lambda_z": f"1/{units.time}",
+            "t_half": units.time,
+            "cl": units.clearance,
+        }
+
+        for attribute, label in self.unit_labels.items():
+            label.setText(unit_map.get(attribute, ""))
 
     def clear_results(self) -> None:
         for label in self.labels.values():
@@ -163,7 +209,7 @@ class GoodnessOfFitWidget(QWidget):
         )
         heading.setObjectName("majorHeading")
         heading.setAlignment(Qt.AlignCenter)
-        heading.setMinimumHeight(34)
+        heading.setFixedHeight(36)
         layout.addWidget(heading)
 
         content = QWidget()
@@ -185,18 +231,14 @@ class GoodnessOfFitWidget(QWidget):
 
         rows = [
             statistics[index:index + 3]
-            for index in range(
-                0,
-                len(statistics),
-                3,
-            )
+            for index in range(0, len(statistics), 3)
         ]
 
         for row_index, row_items in enumerate(rows):
             row_widget = QWidget()
             row_layout = QGridLayout(row_widget)
             row_layout.setContentsMargins(4, 6, 4, 6)
-            row_layout.setHorizontalSpacing(12)
+            row_layout.setHorizontalSpacing(10)
 
             for index, (title, attribute) in enumerate(
                 row_items
@@ -205,9 +247,6 @@ class GoodnessOfFitWidget(QWidget):
                 value_column = title_column + 1
 
                 title_label = QLabel(title)
-                title_label.setAlignment(
-                    Qt.AlignLeft | Qt.AlignVCenter
-                )
 
                 value_label = QLabel("--")
                 value_label.setObjectName(
@@ -216,7 +255,7 @@ class GoodnessOfFitWidget(QWidget):
                 value_label.setAlignment(
                     Qt.AlignRight | Qt.AlignVCenter
                 )
-                value_label.setMinimumWidth(82)
+                value_label.setMinimumWidth(75)
 
                 self.labels[attribute] = value_label
 

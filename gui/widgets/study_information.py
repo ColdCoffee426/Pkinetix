@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QLabel,
     QLineEdit,
+    QListView,
     QTextEdit,
     QWidget,
 )
@@ -54,8 +55,8 @@ class StudyInformationWidget(QWidget):
         self.route.addItem("Oral", "Oral")
         self.route.addItem("IV Bolus", "IV Bolus")
         self.route.addItem("IV Infusion", "IV Infusion")
-        self.route.addItem("IM", "IM")
-        self.route.addItem("SC", "SC")
+        self.route.addItem("Intramuscular (IM)", "IM")
+        self.route.addItem("Subcutaneous (SC)", "SC")
 
         self.auc_method = QComboBox()
         self.auc_method.addItem(
@@ -70,6 +71,14 @@ class StudyInformationWidget(QWidget):
             "Log Trapezoidal",
             "log",
         )
+
+        for combo in (
+            self.concentration_unit,
+            self.time_unit,
+            self.route,
+            self.auc_method,
+        ):
+            self._configure_combo(combo)
 
         self.comments = QTextEdit()
         self.comments.setMaximumHeight(75)
@@ -172,6 +181,26 @@ class StudyInformationWidget(QWidget):
             self._on_concentration_unit_changed
         )
 
+    @staticmethod
+    def _configure_combo(
+        combo: QComboBox,
+    ) -> None:
+        """
+        Use a wide list popup instead of the native compact menu.
+        """
+
+        view = QListView()
+        view.setObjectName("comboPopup")
+        view.setMinimumWidth(260)
+        view.setSpacing(2)
+        view.setUniformItemSizes(True)
+
+        combo.setView(view)
+        combo.setMinimumContentsLength(18)
+        combo.setSizeAdjustPolicy(
+            QComboBox.AdjustToMinimumContentsLengthWithIcon
+        )
+
     def _on_time_unit_changed(self) -> None:
         new_unit = str(self.time_unit.currentData())
         old_unit = self._previous_time_unit
@@ -203,10 +232,6 @@ class StudyInformationWidget(QWidget):
         self.data_changed.emit()
 
     def get_data(self) -> dict[str, str]:
-        """
-        Return current study, dosing and unit information.
-        """
-
         return {
             "study_name": self.study_name.text().strip(),
             "drug_name": self.drug_name.text().strip(),
