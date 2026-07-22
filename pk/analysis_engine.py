@@ -6,38 +6,45 @@ class AnalysisEngine:
     Prepares project data before analysis.
     """
 
-    def __init__(self, project: Project):
+    def __init__(
+        self,
+        project: Project,
+    ) -> None:
         self.project = project
 
     def prepare(self) -> Project:
         """
-        Prepare analysis data.
-
-        Future responsibilities:
-
-        - Remove empty rows
-        - Validate observations
-        - Unit conversion
-        - Sort observations
+        Prepare project before PK analysis.
         """
 
+        self._sort_observations()
+
         return self.project
+
+    def _sort_observations(self) -> None:
+        """
+        Ensure observations are sorted by time.
+        """
+
+        self.project.observations.sort(
+            key=lambda observation: observation.time
+        )
 
     def get_plot_data(
         self,
     ) -> tuple[list[float], list[float]]:
         """
-        Return time and concentration data
-        for graph plotting.
+        Return plotting data.
         """
 
-        time = []
-        concentration = []
+        time = [
+            observation.time
+            for observation in self.project.observations
+        ]
 
-        for observation in self.project.observations:
-            time.append(observation.time)
-            concentration.append(
-                observation.concentration
-            )
+        concentration = [
+            observation.concentration
+            for observation in self.project.observations
+        ]
 
         return time, concentration

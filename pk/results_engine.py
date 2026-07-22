@@ -1,46 +1,36 @@
 """
 Coordinates pharmacokinetic result calculations.
-
-Individual PK parameters are delegated to dedicated
-calculator modules.
 """
 
 from app.models.analysis_result import AnalysisResult
 from app.models.project import Project
-from pk.nca.auc import calculate as calculate_auc
+from pk.nca.auc import AUCMethod
 from pk.nca.cmax import calculate as calculate_cmax
 from pk.nca.tmax import calculate as calculate_tmax
-from pk.nca.lambda_z import calculate as calculate_lambda_z
-from pk.nca.half_life import calculate as calculate_half_life
-from app.models.analysis_result import AnalysisResult
-
-from pk.nca.aumc import calculate as calculate_aumc
-from pk.nca.mrt import calculate as calculate_mrt
-from pk.nca.auc import calculate_auc_infinity
-
-
-from pk.nca.clearance import calculate as calculate_clearance
-from pk.nca.volume import calculate as calculate_volume
 from pk.nca.auc import (
+    calculate as calculate_auc,
+    calculate_auc_infinity,
     calculate_extrapolated_auc,
     calculate_extrapolated_percent,
 )
-
-
+from pk.nca.lambda_z import calculate as calculate_lambda_z
+from pk.nca.half_life import calculate as calculate_half_life
+from pk.nca.aumc import calculate as calculate_aumc
+from pk.nca.mrt import calculate as calculate_mrt
+from pk.nca.clearance import calculate as calculate_clearance
+from pk.nca.volume import calculate as calculate_volume
 
 
 class ResultsEngine:
-    """
-    Coordinates pharmacokinetic result calculations.
 
-    Individual PK parameters are delegated to dedicated
-    calculator modules.
-    """
-
-    def __init__(self, project: Project) -> None:
+    def __init__(
+        self,
+        project: Project,
+    ) -> None:
         self.project = project
 
     def calculate(self) -> AnalysisResult:
+
         result = AnalysisResult()
 
         observations = self.project.observations
@@ -55,8 +45,10 @@ class ResultsEngine:
                 cmax_observation
             )
 
+       
         result.auc_0_t = calculate_auc(
-            observations
+            observations,
+            AUCMethod.LINEAR_UP_LOG_DOWN,
         )
 
         lambda_result = calculate_lambda_z(
@@ -64,6 +56,7 @@ class ResultsEngine:
         )
 
         result.lambda_z = lambda_result.lambda_z
+
         result.t_half = calculate_half_life(
             lambda_result.lambda_z
         )
@@ -112,10 +105,17 @@ class ResultsEngine:
             result.cl,
             result.lambda_z,
         )
- 
 
         result.terminal_points = (
             lambda_result.terminal_indices
+        )
+
+        result.terminal_times = (
+            lambda_result.terminal_times
+        )
+
+        result.terminal_concentrations = (
+            lambda_result.terminal_concentrations
         )
 
         result.terminal_r_squared = (
@@ -140,6 +140,26 @@ class ResultsEngine:
 
         result.terminal_confidence = (
             lambda_result.confidence
+        )
+
+        result.fitted_terminal_times = (
+            lambda_result.fitted_times
+        )
+
+        result.fitted_terminal_concentrations = (
+            lambda_result.fitted_concentrations
+        )
+
+        result.terminal_rmse = (
+            lambda_result.rmse
+        )
+
+        result.terminal_mae = (
+            lambda_result.mae
+        )
+
+        result.terminal_bias = (
+            lambda_result.bias
         )
 
         return result

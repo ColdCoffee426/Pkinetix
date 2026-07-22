@@ -12,7 +12,7 @@ class Units:
     clearance: str = "L/h"
     auc: str = "ng·h/mL"
     aumc: str = "ng·h²/mL"
-
+    auc_method: str = "linear_up_log_down"
 
 @dataclass(slots=True)
 class Observation:

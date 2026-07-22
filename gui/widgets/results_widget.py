@@ -29,6 +29,12 @@ class ResultsWidget(QWidget):
             ("Vz", "vz"),
             ("Terminal R²", "terminal_r_squared"),
             ("Adj. R²", "terminal_adjusted_r_squared"),
+            ("Terminal R²", "terminal_r_squared"),
+            ("Adjusted R²", "terminal_adjusted_r_squared"),
+            ("Terminal SSE", "terminal_sse"),
+            ("Terminal AIC", "terminal_aic"),
+            ("Terminal BIC", "terminal_bic"),
+            ("Confidence", "terminal_confidence"),
         ]
 
         for title, attribute in parameters:

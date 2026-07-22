@@ -27,12 +27,42 @@ class AnalysisResult:
 
     # Terminal Phase Information
     terminal_points: list[int] = field(default_factory=list)
+    terminal_times: list[float] = field(
+        default_factory=list
+    )
+
+    terminal_concentrations: list[float] = field(
+        default_factory=list
+    )
+    terminal_rmse: float | None = None
+    terminal_mae: float | None = None
+    terminal_bias: float | None = None
     terminal_r_squared: float | None = None
     terminal_adjusted_r_squared: float | None = None
     terminal_sse: float | None = None
     terminal_aic: float | None = None
     terminal_bic: float | None = None
     terminal_confidence: float | None = None
+
+    terminal_rmse: float | None = None
+    terminal_mae: float | None = None
+    terminal_bias: float | None = None
+
+    fitted_terminal_times: list[float] = field(
+        default_factory=list
+    )
+
+    fitted_terminal_concentrations: list[float] = field(
+        default_factory=list
+    )
+
+    fitted_terminal_times: list[float] = field(
+        default_factory=list
+    )
+
+    fitted_terminal_concentrations: list[float] = field(
+        default_factory=list
+    )
 
     # Analysis Information
     analysis_mode: str = "NCA"
@@ -44,10 +74,6 @@ class AnalysisResult:
 
     @property
     def has_results(self) -> bool:
-        """
-        Returns True if at least one PK parameter has been calculated.
-        """
-
         return any(
             value is not None
             for value in (
@@ -57,12 +83,7 @@ class AnalysisResult:
                 self.auc_0_t,
             )
         )
+
     @property
     def has_terminal_phase(self) -> bool:
-        """
-        Returns True if a terminal phase was identified.
-        """
-
-        return (
-            self.lambda_z is not None
-        )
+        return self.lambda_z is not None

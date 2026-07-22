@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass(slots=True)
@@ -25,3 +25,10 @@ class LambdaZResult:
 
     confidence: float | None
     status: str
+
+    fitted_times: list[float] = field(default_factory=list)
+    fitted_concentrations: list[float] = field(default_factory=list)
+
+    rmse: float | None = None
+    mae: float | None = None
+    bias: float | None = None

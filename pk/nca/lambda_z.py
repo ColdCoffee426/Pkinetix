@@ -2,6 +2,12 @@ import math
 
 from app.models.lambda_z_result import LambdaZResult
 from app.models.observation import Observation
+
+from pk.common.goodness_of_fit import (
+    bias,
+    mae,
+    rmse,
+)
 from pk.common.regression import linear_regression
 from pk.common.statistics import regression_score
 from pk.nca.terminal_phase import generate_candidates
@@ -63,8 +69,7 @@ def calculate(
 
         if (
             best_candidate is None
-            or candidate.score
-            > best_candidate.score
+            or candidate.score > best_candidate.score
         ):
             best_candidate = candidate
             best_regression = regression
@@ -98,6 +103,33 @@ def calculate(
         ),
     )
 
+    fitted_times = list(
+        best_candidate.times
+    )
+
+    fitted_concentrations = [
+        math.exp(
+            best_regression.intercept
+            + best_regression.slope * time
+        )
+        for time in fitted_times
+    ]
+
+    fit_rmse = rmse(
+        best_candidate.concentrations,
+        fitted_concentrations,
+    )
+
+    fit_mae = mae(
+        best_candidate.concentrations,
+        fitted_concentrations,
+    )
+
+    fit_bias = bias(
+        best_candidate.concentrations,
+        fitted_concentrations,
+    )
+
     return LambdaZResult(
         lambda_z=-best_regression.slope,
         slope=best_regression.slope,
@@ -117,4 +149,9 @@ def calculate(
         ),
         confidence=confidence,
         status="Success",
+        fitted_times=fitted_times,
+        fitted_concentrations=fitted_concentrations,
+        rmse=fit_rmse,
+        mae=fit_mae,
+        bias=fit_bias,
     )

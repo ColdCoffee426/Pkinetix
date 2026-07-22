@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
 
 
 
+
 from gui.widgets.study_information import StudyInformationWidget
 from gui.widgets.data_table import DataTableWidget
 from gui.widgets.graph_widget import GraphWidget
@@ -144,6 +145,7 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(
             "Data updated"
         )
+    
     def _project_changed(self) -> None:
         """
         Handle updates after the project model changes.
@@ -153,16 +155,36 @@ class MainWindow(QMainWindow):
             self.analysis_engine.get_plot_data()
         )
 
-        self.graph.canvas.plot_profile(
-            time,
-            concentration,
+        results = (
+            self.project_controller.analysis_result
         )
 
-        if self.project_controller.analysis_result is None:
-            self.results.clear_results()
+        if results is None:
+            self.graph.plot_profile(
+                time,
+                concentration,
+            )
         else:
-            self.results.update_results(
-                self.project_controller.analysis_result
+            highlighted_time = (
+                results.terminal_times
+            )
+
+            highlighted_concentration = (
+                results.terminal_concentrations
+            )
+            self.graph.plot_profile(
+                time,
+                concentration,
+                fitted_time=(
+                    results.fitted_terminal_times
+                ),
+                fitted_concentration=(
+                    results.fitted_terminal_concentrations
+                ),
+                highlighted_time=highlighted_time,
+                highlighted_concentration=(
+                    highlighted_concentration
+                ),
             )
 
         self.statusBar().showMessage(
