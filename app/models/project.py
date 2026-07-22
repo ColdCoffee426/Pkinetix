@@ -1,27 +1,7 @@
 from dataclasses import dataclass, field
 
-
-@dataclass(slots=True)
-class Units:
-
-    time: str = "h"
-    concentration: str = "ng/mL"
-    dose: str = "mg"
-    body_weight: str = "kg"
-    volume: str = "L"
-    clearance: str = "L/h"
-    auc: str = "ng·h/mL"
-    aumc: str = "ng·h²/mL"
-    auc_method: str = "linear_up_log_down"
-
-@dataclass(slots=True)
-class Observation:
-    """
-    Clean concentration-time observation.
-    """
-
-    time: float | None = None
-    concentration: float | None = None
+from app.models.observation import Observation
+from app.models.units import Units
 
 
 @dataclass(slots=True)
@@ -38,17 +18,11 @@ class Project:
     body_weight: float | None = None
 
     comments: str = ""
-
     route: str | None = None
+    auc_method: str = "linear_up_log_down"
 
-    units: Units = field(
-        default_factory=Units
-    )
-
-    observations: list[Observation] = field(
-        default_factory=list
-    )
-
+    units: Units = field(default_factory=Units)
+    observations: list[Observation] = field(default_factory=list)
 
     def add_observation(
         self,
@@ -56,7 +30,7 @@ class Project:
         concentration: float,
     ) -> None:
         """
-        Add cleaned observation data.
+        Add validated observation data.
         """
 
         self.observations.append(

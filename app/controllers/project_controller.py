@@ -57,13 +57,14 @@ class ProjectController(QObject):
         data: dict[str, str],
     ) -> None:
         """
-        Update project study and dosing information.
+        Update project study, dosing and analysis settings.
         """
 
         self.project.study_name = data["study_name"]
         self.project.drug_name = data["drug_name"]
         self.project.subject_id = data["subject_id"]
         self.project.route = data["route"]
+        self.project.auc_method = data["auc_method"]
         self.project.comments = data["comments"]
 
         self.project.dose = self._optional_positive_float(
