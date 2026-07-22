@@ -388,7 +388,7 @@ class MainWindow(QMainWindow):
 
             Window background:     #89adb2
             Panel background:      #9fc0c4
-            Header teal:           #156dc6
+            Header teal:           #709da4
             Purple heading:        #96719b
             Text:                  #183a40
             Table lines:           #628e94
@@ -396,17 +396,17 @@ class MainWindow(QMainWindow):
             */
 
             QMainWindow {
-                background-color: #9fc7ef;
+                background-color: #89adb2;
             }
 
             QWidget {
-                background-color: #b8d7f4;
-                color: #163a5c;
+                background-color: #9fc0c4;
+                color: #183a40;
                 font-size: 13px;
             }
 
             #brandHeader {
-                background-color: #156dc6;
+                background-color: #709da4;
                 border: 1px solid #4f8189;
                 border-radius: 5px;
             }
@@ -436,12 +436,12 @@ class MainWindow(QMainWindow):
                 max-height: 36px;
             }
 
-          QLineEdit,
+            QLineEdit,
             QTextEdit,
             QComboBox {
-                background-color: #d7e9f9;
-                color: #163a5c;
-                border: 1px solid #6fa8df;
+                background-color: #d7e7e9;
+                color: #183a40;
+                border: 1px solid #668f95;
                 border-radius: 3px;
                 padding: 5px;
                 min-height: 22px;
@@ -457,7 +457,8 @@ class MainWindow(QMainWindow):
             QLineEdit:focus,
             QTextEdit:focus,
             QComboBox:focus {
-                border: 1px solid #156dc6;
+                background-color: #f0f7f8;
+                border: 1px solid #326d76;
             }
 
             QComboBox::drop-down {
@@ -486,8 +487,9 @@ class MainWindow(QMainWindow):
             }
 
             QComboBox QAbstractItemView::item:selected {
-                background-color: #156dc6;
-                color: white;
+                background-color: #78abb2;
+                color: #102f35;
+                border: none;
             }
 
             #fixedUnitLabel {
@@ -499,14 +501,11 @@ class MainWindow(QMainWindow):
             }
 
             QTableWidget {
-                background-color: #f4f9fd;
-    color: #163a5c;
-    border: 1px solid #6fa8df;
-    gridline-color: #6fa8df;
+                background-color: #eef5f6;
                 alternate-background-color: #eef5f6;
-            
+                color: #183a40;
                 border: 1px solid #628e94;
-           
+                gridline-color: #628e94;
                 selection-background-color: #95bcc1;
                 selection-color: #102f35;
             }
@@ -518,8 +517,8 @@ class MainWindow(QMainWindow):
             }
 
             QTableWidget::item:selected {
-                background-color: #156dc6;
-                color: white;
+                background-color: #95bcc1;
+                color: #102f35;
             }
 
             QTableWidget QLineEdit {
@@ -568,11 +567,11 @@ class MainWindow(QMainWindow):
             }
 
             QSplitter::handle {
-                background-color: #156dc6;
+                background-color: #5f9299;
             }
 
             QSplitter::handle:hover {
-                background-color: #0f5ba7;
+                background-color: #3e7881;
             }
 
             QScrollArea {
@@ -609,7 +608,7 @@ class MainWindow(QMainWindow):
             }
 
             QStatusBar {
-                background-color:  #156dc6;
+                background-color: #709da4;
                 color: #f0fafb;
                 border-top: 1px solid #4f8189;
             }
