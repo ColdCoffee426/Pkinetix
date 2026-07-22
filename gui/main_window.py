@@ -39,6 +39,7 @@ class MainWindow(QMainWindow):
         self._create_central_widget()
         self._create_layout()
         self._connect_signals()
+        self._apply_theme()
 
         self.statusBar().showMessage("Ready")
 
@@ -46,8 +47,10 @@ class MainWindow(QMainWindow):
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
 
-        self.main_layout = QVBoxLayout(self.central_widget)
-        self.main_layout.setContentsMargins(5, 5, 5, 5)
+        self.main_layout = QVBoxLayout(
+            self.central_widget
+        )
+        self.main_layout.setContentsMargins(6, 6, 6, 6)
 
     def _create_layout(self) -> None:
         self.study_information = StudyInformationWidget()
@@ -110,7 +113,7 @@ class MainWindow(QMainWindow):
         self.main_splitter.setStretchFactor(0, 7)
         self.main_splitter.setStretchFactor(1, 3)
         self.main_splitter.setChildrenCollapsible(False)
-        self.main_splitter.setSizes([620, 260])
+        self.main_splitter.setSizes([650, 230])
         self.main_splitter.setHandleWidth(8)
 
         self.main_layout.addWidget(self.main_splitter)
@@ -134,10 +137,129 @@ class MainWindow(QMainWindow):
         panel = QGroupBox(title)
 
         layout = QVBoxLayout(panel)
-        layout.setContentsMargins(8, 12, 8, 8)
+        layout.setContentsMargins(8, 14, 8, 8)
         layout.addWidget(widget)
 
         return panel
+
+    def _apply_theme(self) -> None:
+        """
+        Apply the PKinetix teal-blue interface theme.
+        """
+
+        self.setStyleSheet("""
+            QMainWindow,
+            QWidget {
+                background-color: #17242b;
+                color: #dbe7eb;
+                font-size: 13px;
+            }
+
+            QGroupBox {
+                background-color: #1d3038;
+                border: 1px solid #2f6671;
+                border-radius: 6px;
+                margin-top: 10px;
+                padding-top: 7px;
+                font-weight: 600;
+            }
+
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                subcontrol-position: top left;
+                left: 10px;
+                padding: 0 5px;
+                color: #80d0d4;
+                background-color: #1d3038;
+            }
+
+            QLineEdit,
+            QTextEdit,
+            QComboBox {
+                background-color: #223942;
+                color: #e6f1f3;
+                border: 1px solid #356c78;
+                border-radius: 4px;
+                padding: 5px;
+                selection-background-color: #236d83;
+            }
+
+            QLineEdit:focus,
+            QTextEdit:focus,
+            QComboBox:focus {
+                border: 1px solid #54b8c1;
+            }
+
+            QComboBox QAbstractItemView {
+                background-color: #223942;
+                color: #e6f1f3;
+                selection-background-color: #245f7a;
+            }
+
+            QTableWidget {
+                background-color: #1b2d35;
+                alternate-background-color: #203842;
+                color: #e2edf0;
+                gridline-color: #365d68;
+                border: 1px solid #315e69;
+                selection-background-color: #245f7a;
+                selection-color: #ffffff;
+            }
+
+            QHeaderView::section {
+                background-color: #214d5b;
+                color: #e7f4f5;
+                border: 1px solid #387381;
+                padding: 6px;
+                font-weight: 600;
+            }
+
+            QTableCornerButton::section {
+                background-color: #214d5b;
+                border: 1px solid #387381;
+            }
+
+            QSplitter::handle {
+                background-color: #28566a;
+            }
+
+            QSplitter::handle:hover {
+                background-color: #3c8191;
+            }
+
+            QScrollBar:vertical,
+            QScrollBar:horizontal {
+                background-color: #172a32;
+                border: none;
+            }
+
+            QScrollBar::handle {
+                background-color: #356c78;
+                border-radius: 4px;
+                min-width: 20px;
+                min-height: 20px;
+            }
+
+            QScrollBar::handle:hover {
+                background-color: #438ba0;
+            }
+
+            QScrollBar::add-line,
+            QScrollBar::sub-line {
+                width: 0;
+                height: 0;
+            }
+
+            QStatusBar {
+                background-color: #15313f;
+                color: #9dd7df;
+                border-top: 1px solid #2e6370;
+            }
+
+            QLabel {
+                background-color: transparent;
+            }
+        """)
 
     def _on_data_changed(self) -> None:
         data = self.data_table.get_data()
