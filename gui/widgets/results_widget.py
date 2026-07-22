@@ -12,7 +12,6 @@ class ResultsWidget(QWidget):
         super().__init__()
 
         self.labels: dict[str, QLabel] = {}
-
         layout = QFormLayout(self)
 
         parameters = [
@@ -22,18 +21,20 @@ class ResultsWidget(QWidget):
             ("Half-life", "t_half"),
             ("AUC₀-t", "auc_0_t"),
             ("AUC₀-∞", "auc_0_inf"),
+            ("AUC Extrap.", "auc_extrapolated"),
             ("% AUC Extrap.", "auc_extrapolated_percent"),
             ("AUMC", "aumc"),
             ("MRT", "mrt"),
             ("Clearance", "cl"),
             ("Vz", "vz"),
             ("Terminal R²", "terminal_r_squared"),
-            ("Adj. R²", "terminal_adjusted_r_squared"),
-            ("Terminal R²", "terminal_r_squared"),
             ("Adjusted R²", "terminal_adjusted_r_squared"),
             ("Terminal SSE", "terminal_sse"),
             ("Terminal AIC", "terminal_aic"),
             ("Terminal BIC", "terminal_bic"),
+            ("Terminal RMSE", "terminal_rmse"),
+            ("Terminal MAE", "terminal_mae"),
+            ("Terminal Bias", "terminal_bias"),
             ("Confidence", "terminal_confidence"),
         ]
 
@@ -59,13 +60,15 @@ class ResultsWidget(QWidget):
         """
 
         for attribute, label in self.labels.items():
-            value = getattr(results, attribute)
+            value = getattr(
+                results,
+                attribute,
+                None,
+            )
 
             if value is None:
                 label.setText("--")
-                continue
-
-            if isinstance(value, float):
+            elif isinstance(value, float):
                 label.setText(f"{value:.4f}")
             else:
                 label.setText(str(value))

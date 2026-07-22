@@ -1,18 +1,24 @@
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
-    QWidget,
+    QComboBox,
     QFormLayout,
     QLineEdit,
     QTextEdit,
-    QComboBox
+    QWidget,
 )
 
 
 class StudyInformationWidget(QWidget):
+    """
+    Collects project and dosing information.
+    """
 
-    def __init__(self):
+    data_changed = Signal()
+
+    def __init__(self) -> None:
         super().__init__()
 
-        layout = QFormLayout()
+        layout = QFormLayout(self)
 
         self.study_name = QLineEdit()
         self.drug_name = QLineEdit()
@@ -26,7 +32,7 @@ class StudyInformationWidget(QWidget):
             "IV Bolus",
             "IV Infusion",
             "IM",
-            "SC"
+            "SC",
         ])
 
         self.comments = QTextEdit()
@@ -39,4 +45,25 @@ class StudyInformationWidget(QWidget):
         layout.addRow("Body Weight", self.body_weight)
         layout.addRow("Comments", self.comments)
 
-        self.setLayout(layout)
+        self.study_name.textChanged.connect(self.data_changed)
+        self.drug_name.textChanged.connect(self.data_changed)
+        self.subject_id.textChanged.connect(self.data_changed)
+        self.dose.textChanged.connect(self.data_changed)
+        self.body_weight.textChanged.connect(self.data_changed)
+        self.route.currentTextChanged.connect(self.data_changed)
+        self.comments.textChanged.connect(self.data_changed)
+
+    def get_data(self) -> dict[str, str]:
+        """
+        Return the current study information.
+        """
+
+        return {
+            "study_name": self.study_name.text().strip(),
+            "drug_name": self.drug_name.text().strip(),
+            "subject_id": self.subject_id.text().strip(),
+            "dose": self.dose.text().strip(),
+            "body_weight": self.body_weight.text().strip(),
+            "route": self.route.currentText(),
+            "comments": self.comments.toPlainText().strip(),
+        }
