@@ -1,7 +1,6 @@
 .
 ├── .gitignore
 ├── Commands.txt
-├── PKinetix_backup_2026-07-22_16-24.zip
 ├── README.md
 ├── app
 │   ├── controllers
@@ -28,6 +27,7 @@
 ├── assets
 │   ├── icons
 │   └── logo
+│       └── Pkinetix_logo.png
 ├── docs
 ├── gui
 │   ├── __init__.py

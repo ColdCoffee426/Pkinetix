@@ -1,10 +1,20 @@
-from PySide6.QtCore import QEvent, QSignalBlocker, Qt, Signal
-from PySide6.QtGui import QAction, QKeySequence
+from PySide6.QtCore import (
+    QEvent,
+    QSignalBlocker,
+    Qt,
+    Signal,
+)
+from PySide6.QtGui import (
+    QAction,
+    QKeySequence,
+)
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QApplication,
     QHeaderView,
+    QLineEdit,
     QMenu,
+    QStyledItemDelegate,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -12,6 +22,32 @@ from PySide6.QtWidgets import (
 )
 
 from app.models.observation import ObservationInput
+
+
+class TableEditorDelegate(QStyledItemDelegate):
+    """
+    Creates a clearly visible inline table editor.
+    """
+
+    def createEditor(
+        self,
+        parent,
+        option,
+        index,
+    ) -> QLineEdit:
+        editor = QLineEdit(parent)
+        editor.setMinimumHeight(30)
+        editor.setAlignment(
+            Qt.AlignLeft | Qt.AlignVCenter
+        )
+        editor.setContentsMargins(
+            3,
+            0,
+            3,
+            0,
+        )
+
+        return editor
 
 
 class DataTableWidget(QWidget):
@@ -28,6 +64,10 @@ class DataTableWidget(QWidget):
         self.concentration_unit = "ng/mL"
 
         self.table = QTableWidget(0, 2)
+        self.table.setItemDelegate(
+            TableEditorDelegate(self.table)
+        )
+
         self._configure_table()
 
         layout = QVBoxLayout(self)
@@ -52,42 +92,81 @@ class DataTableWidget(QWidget):
             | QAbstractItemView.SelectedClicked
         )
 
-        self.table.setShowGrid(False)
+        self.table.setShowGrid(True)
         self.table.setAlternatingRowColors(False)
         self.table.setWordWrap(False)
-        self.table.verticalHeader().setVisible(False)
 
+        self.table.verticalHeader().setVisible(
+            False
+        )
+        self.table.verticalHeader().setDefaultSectionSize(
+            34
+        )
+        self.table.verticalHeader().setMinimumSectionSize(
+            34
+        )
 
+        self.table.horizontalHeader().setMinimumHeight(
+            34
+        )
         self.table.horizontalHeader().setSectionResizeMode(
             QHeaderView.Stretch
         )
-        self.table.setContextMenuPolicy(Qt.CustomContextMenu)
+
+        self.table.setContextMenuPolicy(
+            Qt.CustomContextMenu
+        )
         self.table.customContextMenuRequested.connect(
             self._show_context_menu
         )
-        self.table.itemChanged.connect(self._on_item_changed)
+        self.table.itemChanged.connect(
+            self._on_item_changed
+        )
         self.table.installEventFilter(self)
 
     def _update_headers(self) -> None:
         self.table.setHorizontalHeaderLabels([
             f"Time ({self.time_unit})",
-            f"Concentration ({self.concentration_unit})",
+            (
+                "Concentration "
+                f"({self.concentration_unit})"
+            ),
         ])
 
     def add_empty_row(self) -> None:
         row = self.table.rowCount()
         self.table.insertRow(row)
-        self.table.setItem(row, 0, QTableWidgetItem(""))
-        self.table.setItem(row, 1, QTableWidgetItem(""))
+
+        self.table.setItem(
+            row,
+            0,
+            QTableWidgetItem(""),
+        )
+        self.table.setItem(
+            row,
+            1,
+            QTableWidgetItem(""),
+        )
+
+        self.table.setRowHeight(row, 34)
 
     def get_data(self) -> list[ObservationInput]:
         data: list[ObservationInput] = []
 
-        for row in range(self.table.rowCount()):
+        for row in range(
+            self.table.rowCount()
+        ):
             time_item = self.table.item(row, 0)
-            concentration_item = self.table.item(row, 1)
+            concentration_item = self.table.item(
+                row,
+                1,
+            )
 
-            time = time_item.text().strip() if time_item else ""
+            time = (
+                time_item.text().strip()
+                if time_item
+                else ""
+            )
             concentration = (
                 concentration_item.text().strip()
                 if concentration_item
@@ -137,9 +216,15 @@ class DataTableWidget(QWidget):
 
         factor = 1.0
 
-        if old_unit == "ng/mL" and new_unit == "µg/mL":
+        if (
+            old_unit == "ng/mL"
+            and new_unit == "µg/mL"
+        ):
             factor = 1 / 1000
-        elif old_unit == "µg/mL" and new_unit == "ng/mL":
+        elif (
+            old_unit == "µg/mL"
+            and new_unit == "ng/mL"
+        ):
             factor = 1000.0
 
         self._convert_column(1, factor)
@@ -154,8 +239,13 @@ class DataTableWidget(QWidget):
     ) -> None:
         blocker = QSignalBlocker(self.table)
 
-        for row in range(self.table.rowCount()):
-            item = self.table.item(row, column)
+        for row in range(
+            self.table.rowCount()
+        ):
+            item = self.table.item(
+                row,
+                column,
+            )
 
             if item is None:
                 continue
@@ -170,33 +260,58 @@ class DataTableWidget(QWidget):
             except ValueError:
                 continue
 
-            item.setText(f"{value * factor:.10g}")
+            item.setText(
+                f"{value * factor:.10g}"
+            )
 
         del blocker
 
     def _on_item_changed(self) -> None:
-        if self.table.currentRow() == self.table.rowCount() - 1:
+        if (
+            self.table.currentRow()
+            == self.table.rowCount() - 1
+        ):
             self.add_empty_row()
 
         self.data_changed.emit()
 
-    def _show_context_menu(self, position) -> None:
+    def _show_context_menu(
+        self,
+        position,
+    ) -> None:
         menu = QMenu(self)
 
-        insert_action = QAction("Insert Row", self)
-        delete_action = QAction("Delete Selected Rows", self)
+        insert_action = QAction(
+            "Insert Row",
+            self,
+        )
+        delete_action = QAction(
+            "Delete Selected Rows",
+            self,
+        )
         copy_action = QAction("Copy", self)
         cut_action = QAction("Cut", self)
         paste_action = QAction("Paste", self)
-        clear_action = QAction("Clear Selected Cells", self)
+        clear_action = QAction(
+            "Clear Selected Cells",
+            self,
+        )
 
-        insert_action.triggered.connect(self.insert_row)
+        insert_action.triggered.connect(
+            self.insert_row
+        )
         delete_action.triggered.connect(
             self.delete_selected_rows
         )
-        copy_action.triggered.connect(self.copy_selection)
-        cut_action.triggered.connect(self.cut_selection)
-        paste_action.triggered.connect(self.paste_selection)
+        copy_action.triggered.connect(
+            self.copy_selection
+        )
+        cut_action.triggered.connect(
+            self.cut_selection
+        )
+        paste_action.triggered.connect(
+            self.paste_selection
+        )
         clear_action.triggered.connect(
             self.clear_selected_cells
         )
@@ -210,7 +325,9 @@ class DataTableWidget(QWidget):
         menu.addAction(clear_action)
 
         menu.exec(
-            self.table.viewport().mapToGlobal(position)
+            self.table.viewport().mapToGlobal(
+                position
+            )
         )
 
     def insert_row(self) -> None:
@@ -220,14 +337,24 @@ class DataTableWidget(QWidget):
             row = self.table.rowCount()
 
         self.table.insertRow(row)
-        self.table.setItem(row, 0, QTableWidgetItem(""))
-        self.table.setItem(row, 1, QTableWidgetItem(""))
+        self.table.setItem(
+            row,
+            0,
+            QTableWidgetItem(""),
+        )
+        self.table.setItem(
+            row,
+            1,
+            QTableWidgetItem(""),
+        )
+        self.table.setRowHeight(row, 34)
 
     def delete_selected_rows(self) -> None:
         rows = sorted(
             {
                 index.row()
-                for index in self.table.selectedIndexes()
+                for index
+                in self.table.selectedIndexes()
             },
             reverse=True,
         )
@@ -268,12 +395,21 @@ class DataTableWidget(QWidget):
                 selected_range.leftColumn(),
                 selected_range.rightColumn() + 1,
             ):
-                item = self.table.item(row, column)
-                values.append(item.text() if item else "")
+                item = self.table.item(
+                    row,
+                    column,
+                )
+                values.append(
+                    item.text()
+                    if item
+                    else ""
+                )
 
             rows.append("\t".join(values))
 
-        QApplication.clipboard().setText("\n".join(rows))
+        QApplication.clipboard().setText(
+            "\n".join(rows)
+        )
 
     def cut_selection(self) -> None:
         self.copy_selection()
@@ -285,23 +421,42 @@ class DataTableWidget(QWidget):
         if not text:
             return
 
-        start_row = max(self.table.currentRow(), 0)
-        start_column = max(self.table.currentColumn(), 0)
-        rows = text.splitlines()
+        start_row = max(
+            self.table.currentRow(),
+            0,
+        )
+        start_column = max(
+            self.table.currentColumn(),
+            0,
+        )
 
+        rows = text.splitlines()
         blocker = QSignalBlocker(self.table)
 
-        for row_offset, row_text in enumerate(rows):
+        for row_offset, row_text in enumerate(
+            rows
+        ):
             values = row_text.split("\t")
             target_row = start_row + row_offset
 
-            while target_row >= self.table.rowCount():
+            while (
+                target_row
+                >= self.table.rowCount()
+            ):
                 self.add_empty_row()
 
-            for column_offset, value in enumerate(values):
-                target_column = start_column + column_offset
+            for column_offset, value in enumerate(
+                values
+            ):
+                target_column = (
+                    start_column
+                    + column_offset
+                )
 
-                if target_column >= self.table.columnCount():
+                if (
+                    target_column
+                    >= self.table.columnCount()
+                ):
                     continue
 
                 item = self.table.item(
@@ -322,8 +477,15 @@ class DataTableWidget(QWidget):
         del blocker
         self.data_changed.emit()
 
-    def eventFilter(self, watched, event) -> bool:
-        if watched is self.table and event.type() == QEvent.KeyPress:
+    def eventFilter(
+        self,
+        watched,
+        event,
+    ) -> bool:
+        if (
+            watched is self.table
+            and event.type() == QEvent.KeyPress
+        ):
             if event.matches(QKeySequence.Copy):
                 self.copy_selection()
                 return True
@@ -336,8 +498,14 @@ class DataTableWidget(QWidget):
                 self.paste_selection()
                 return True
 
-            if event.key() in (Qt.Key_Delete, Qt.Key_Backspace):
+            if event.key() in (
+                Qt.Key_Delete,
+                Qt.Key_Backspace,
+            ):
                 self.clear_selected_cells()
                 return True
 
-        return super().eventFilter(watched, event)
+        return super().eventFilter(
+            watched,
+            event,
+        )

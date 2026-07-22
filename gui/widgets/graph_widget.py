@@ -1,7 +1,9 @@
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
     QLabel,
+    QListView,
     QVBoxLayout,
     QWidget,
 )
@@ -31,18 +33,43 @@ class GraphWidget(QWidget):
         layout.setSpacing(5)
 
         controls = QHBoxLayout()
+        controls.setContentsMargins(
+            5,
+            3,
+            5,
+            3,
+        )
 
-        scale_label = QLabel("Graph Scale")
+        scale_label = QLabel("Graph Type")
 
         self.scale_selector = QComboBox()
         self.scale_selector.addItem(
-            "Semi-log Y",
+            "Semi-logarithmic Y-axis",
             "log",
         )
         self.scale_selector.addItem(
-            "Linear",
+            "Linear Y-axis",
             "linear",
         )
+
+        popup_view = QListView()
+        popup_view.setObjectName("comboPopup")
+        popup_view.setMinimumWidth(270)
+        popup_view.setSpacing(2)
+        popup_view.setUniformItemSizes(True)
+        popup_view.setVerticalScrollMode(
+            QListView.ScrollPerPixel
+        )
+
+        self.scale_selector.setView(popup_view)
+        self.scale_selector.setMinimumWidth(210)
+        self.scale_selector.setMinimumContentsLength(
+            22
+        )
+        self.scale_selector.setSizeAdjustPolicy(
+            QComboBox.AdjustToMinimumContentsLengthWithIcon
+        )
+
         self.scale_selector.currentIndexChanged.connect(
             self._on_scale_changed
         )

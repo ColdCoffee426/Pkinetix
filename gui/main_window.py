@@ -1,7 +1,4 @@
-from pathlib import Path
-
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -30,6 +27,8 @@ class MainWindow(QMainWindow):
     Main application window for PKinetix.
     """
 
+    HEADING_HEIGHT = 36
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -52,10 +51,6 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("Ready")
 
     def _create_central_widget(self) -> None:
-        """
-        Create the central application widget.
-        """
-
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
 
@@ -71,23 +66,15 @@ class MainWindow(QMainWindow):
         self.main_layout.setSpacing(7)
 
     def _create_layout(self) -> None:
-        """
-        Create the complete application layout.
-        """
-
         self.main_layout.addWidget(
             self._create_brand_header()
         )
 
-        self.study_information = (
-            StudyInformationWidget()
-        )
+        self.study_information = StudyInformationWidget()
         self.data_table = DataTableWidget()
         self.graph = GraphWidget()
         self.results = ResultsWidget()
-        self.goodness_of_fit = (
-            GoodnessOfFitWidget()
-        )
+        self.goodness_of_fit = GoodnessOfFitWidget()
 
         input_widget = self._create_input_widget()
         center_widget = self._create_center_widget()
@@ -99,7 +86,6 @@ class MainWindow(QMainWindow):
         self.workspace_splitter = QSplitter(
             Qt.Horizontal
         )
-
         self.workspace_splitter.addWidget(
             input_widget
         )
@@ -122,7 +108,6 @@ class MainWindow(QMainWindow):
             2,
             3,
         )
-
         self.workspace_splitter.setChildrenCollapsible(
             False
         )
@@ -139,22 +124,17 @@ class MainWindow(QMainWindow):
         )
 
     def _create_input_widget(self) -> QWidget:
-        """
-        Create the left input area.
-        """
-
         widget = QWidget()
-
         layout = QVBoxLayout(widget)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(6)
 
         input_heading = QLabel("INPUT")
-        input_heading.setObjectName(
-            "majorHeading"
-        )
+        input_heading.setObjectName("majorHeading")
         input_heading.setAlignment(Qt.AlignCenter)
-        input_heading.setFixedHeight(36)
+        input_heading.setFixedHeight(
+            self.HEADING_HEIGHT
+        )
 
         layout.addWidget(input_heading)
 
@@ -168,7 +148,6 @@ class MainWindow(QMainWindow):
         )
 
         table_container = QWidget()
-
         table_layout = QVBoxLayout(
             table_container
         )
@@ -184,12 +163,12 @@ class MainWindow(QMainWindow):
             "CONCENTRATION-TIME DATA"
         )
         table_heading.setObjectName(
-            "sectionHeading"
+            "majorHeading"
         )
-        table_heading.setAlignment(
-            Qt.AlignCenter
+        table_heading.setAlignment(Qt.AlignCenter)
+        table_heading.setFixedHeight(
+            self.HEADING_HEIGHT
         )
-        table_heading.setFixedHeight(36)
 
         table_layout.addWidget(table_heading)
         table_layout.addWidget(
@@ -200,13 +179,10 @@ class MainWindow(QMainWindow):
         self.input_splitter = QSplitter(
             Qt.Vertical
         )
-        self.input_splitter.addWidget(
-            study_scroll
-        )
+        self.input_splitter.addWidget(study_scroll)
         self.input_splitter.addWidget(
             table_container
         )
-
         self.input_splitter.setStretchFactor(
             0,
             4,
@@ -232,18 +208,11 @@ class MainWindow(QMainWindow):
         return widget
 
     def _create_center_widget(self) -> QWidget:
-        """
-        Create the graph and fit-statistics area.
-        """
-
         widget = QWidget()
-
         layout = QVBoxLayout(widget)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
 
         graph_container = QWidget()
-
         graph_layout = QVBoxLayout(
             graph_container
         )
@@ -261,16 +230,13 @@ class MainWindow(QMainWindow):
         graph_heading.setObjectName(
             "majorHeading"
         )
-        graph_heading.setAlignment(
-            Qt.AlignCenter
+        graph_heading.setAlignment(Qt.AlignCenter)
+        graph_heading.setFixedHeight(
+            self.HEADING_HEIGHT
         )
-        graph_heading.setFixedHeight(36)
 
         graph_layout.addWidget(graph_heading)
-        graph_layout.addWidget(
-            self.graph,
-            1,
-        )
+        graph_layout.addWidget(self.graph, 1)
 
         self.center_splitter = QSplitter(
             Qt.Vertical
@@ -281,7 +247,6 @@ class MainWindow(QMainWindow):
         self.center_splitter.addWidget(
             self.goodness_of_fit
         )
-
         self.center_splitter.setStretchFactor(
             0,
             7,
@@ -299,69 +264,22 @@ class MainWindow(QMainWindow):
         ])
         self.center_splitter.setHandleWidth(7)
 
-        layout.addWidget(
-            self.center_splitter,
-            1,
-        )
+        layout.addWidget(self.center_splitter)
 
         return widget
 
     def _create_brand_header(self) -> QFrame:
-        """
-        Create the logo, name and copyright header.
-        """
-
         frame = QFrame()
         frame.setObjectName("brandHeader")
         frame.setFixedHeight(58)
 
         layout = QHBoxLayout(frame)
         layout.setContentsMargins(
-            12,
+            14,
             5,
             14,
             5,
         )
-        layout.setSpacing(10)
-
-        logo_label = QLabel()
-        logo_label.setObjectName("logoLabel")
-        logo_label.setFixedSize(42, 42)
-        logo_label.setAlignment(Qt.AlignCenter)
-
-        project_root = (
-            Path(__file__).resolve().parent.parent
-        )
-
-        logo_candidates = [
-            project_root
-            / "assets/logo/pkinetix_logo.png",
-            project_root
-            / "assets/logo/pkinetix_logo.jpg",
-            project_root
-            / "assets/logo/logo.png",
-            project_root
-            / "assets/logo/logo.jpg",
-        ]
-
-        for logo_path in logo_candidates:
-            if not logo_path.exists():
-                continue
-
-            pixmap = QPixmap(str(logo_path))
-
-            if pixmap.isNull():
-                continue
-
-            logo_label.setPixmap(
-                pixmap.scaled(
-                    38,
-                    38,
-                    Qt.KeepAspectRatio,
-                    Qt.SmoothTransformation,
-                )
-            )
-            break
 
         software_name = QLabel(
             "PKinetix lite"
@@ -384,7 +302,6 @@ class MainWindow(QMainWindow):
             Qt.AlignRight | Qt.AlignVCenter
         )
 
-        layout.addWidget(logo_label)
         layout.addWidget(software_name)
         layout.addStretch()
         layout.addWidget(copyright_label)
@@ -392,55 +309,33 @@ class MainWindow(QMainWindow):
         return frame
 
     def _connect_signals(self) -> None:
-        """
-        Connect GUI signals to controllers.
-        """
-
         self.data_table.data_changed.connect(
             self._on_data_changed
         )
-
         self.study_information.data_changed.connect(
             self._on_study_information_changed
         )
-
         self.study_information.time_unit_changed.connect(
             self.data_table.convert_time_unit
         )
-
         self.study_information.concentration_unit_changed.connect(
             self.data_table.convert_concentration_unit
         )
-
         self.project_controller.project_changed.connect(
             self._project_changed
         )
 
     def _on_data_changed(self) -> None:
-        """
-        Update observations when table data changes.
-        """
-
         self.project_controller.update_observations(
             self.data_table.get_data()
         )
 
-    def _on_study_information_changed(
-        self,
-    ) -> None:
-        """
-        Update project information.
-        """
-
+    def _on_study_information_changed(self) -> None:
         self.project_controller.update_study_information(
             self.study_information.get_data()
         )
 
     def _project_changed(self) -> None:
-        """
-        Refresh the graph and result displays.
-        """
-
         time, concentration = (
             self.analysis_engine.get_plot_data()
         )
@@ -477,9 +372,7 @@ class MainWindow(QMainWindow):
                     results.terminal_concentrations
                 ),
             )
-
             self.results.update_results(results)
-
             self.goodness_of_fit.update_results(
                 results
             )
@@ -489,71 +382,53 @@ class MainWindow(QMainWindow):
         )
 
     def _apply_theme(self) -> None:
-        """
-        Apply the PKinetix teal and purple theme.
-        """
-
         self.setStyleSheet("""
             /*
             MAIN COLORS
 
-            Main window:
-            #a9c8cc
-
-            General panels:
-            #b8d2d5
-
-            Teal header:
-            #91bdc3
-
-            Purple headings:
-            #b991bc
-
-            Teal borders:
-            #78adb3
-
-            Dark text:
-            #203f46
+            Window background:     #89adb2
+            Panel background:      #9fc0c4
+            Header teal:           #709da4
+            Purple heading:        #96719b
+            Text:                  #183a40
+            Table lines:           #628e94
+            Scrollbar accent:      #806287
             */
 
             QMainWindow {
-                background-color: #a9c8cc;
+                background-color: #89adb2;
             }
 
             QWidget {
-                background-color: #b8d2d5;
-                color: #203f46;
+                background-color: #9fc0c4;
+                color: #183a40;
                 font-size: 13px;
             }
 
             #brandHeader {
-                background-color: #91bdc3;
-                border: 1px solid #63aeb7;
+                background-color: #709da4;
+                border: 1px solid #4f8189;
                 border-radius: 5px;
             }
 
-            #logoLabel {
-                background-color: transparent;
-            }
-
             #softwareName {
-                color: #214f58;
+                color: #f0fafb;
                 font-size: 22px;
                 font-weight: 700;
                 background-color: transparent;
             }
 
             #copyrightLabel {
-                color: #345f66;
+                color: #e3f0f1;
                 background-color: transparent;
                 font-size: 12px;
             }
 
             #majorHeading,
             #sectionHeading {
-                background-color: #b991bc;
-                border: 1px solid #956b9c;
-                color: #392d3c;
+                background-color: #96719b;
+                border: 1px solid #745379;
+                color: #fff7ff;
                 font-weight: 700;
                 letter-spacing: 1px;
                 border-radius: 3px;
@@ -564,127 +439,139 @@ class MainWindow(QMainWindow):
             QLineEdit,
             QTextEdit,
             QComboBox {
-                background-color: rgba(
-                    240,
-                    249,
-                    250,
-                    180
-                );
-                color: #25454b;
-                border: 1px solid #78adb3;
+                background-color: #d7e7e9;
+                color: #183a40;
+                border: 1px solid #668f95;
                 border-radius: 3px;
                 padding: 5px;
+                min-height: 22px;
             }
 
             QLineEdit:hover,
             QTextEdit:hover,
             QComboBox:hover {
-                background-color: rgba(
-                    247,
-                    252,
-                    252,
-                    210
-                );
+                background-color: #e4eff0;
+                border: 1px solid #4e7f87;
             }
 
             QLineEdit:focus,
             QTextEdit:focus,
             QComboBox:focus {
-                background-color: #f5fbfc;
-                border: 1px solid #438f99;
+                background-color: #f0f7f8;
+                border: 1px solid #326d76;
+            }
+
+            QComboBox::drop-down {
+                border: none;
+                width: 24px;
             }
 
             QComboBox QAbstractItemView {
-                background-color: #e4f1f2;
-                color: #25454b;
-                border: 1px solid #6da6ad;
+                background-color: #e7f1f2;
+                color: #183a40;
+                border: 1px solid #527f86;
                 outline: 0;
                 padding: 4px;
+                min-width: 250px;
             }
 
             QComboBox QAbstractItemView::item {
-                min-height: 28px;
-                padding: 5px 10px;
+                min-height: 30px;
+                padding: 6px 10px;
                 border: none;
             }
 
             QComboBox QAbstractItemView::item:hover {
-                background-color: #b7dadd;
-                color: #183940;
+                background-color: #b5d2d6;
+                color: #183a40;
             }
 
             QComboBox QAbstractItemView::item:selected {
-                background-color: #78b4bb;
-                color: #16363c;
+                background-color: #78abb2;
+                color: #102f35;
                 border: none;
             }
 
             #fixedUnitLabel {
-                color: #315d64;
+                background-color: transparent;
+                color: #28545b;
                 padding-left: 5px;
                 padding-right: 7px;
                 font-weight: 600;
             }
 
             QTableWidget {
-                background-color: rgba(
-                    236,
-                    247,
-                    248,
-                    200
-                );
-                color: #23454b;
-                border: 1px solid #78adb3;
-                gridline-color: transparent;
-                selection-background-color: #85bcc2;
-                selection-color: #16363c;
+                background-color: #eef5f6;
+                alternate-background-color: #eef5f6;
+                color: #183a40;
+                border: 1px solid #628e94;
+                gridline-color: #628e94;
+                selection-background-color: #95bcc1;
+                selection-color: #102f35;
             }
 
             QTableWidget::item {
                 background-color: transparent;
                 border: none;
-                border-bottom: 1px solid #91bdc2;
                 padding: 5px;
             }
 
             QTableWidget::item:selected {
-                background-color: #85bcc2;
-                color: #16363c;
+                background-color: #95bcc1;
+                color: #102f35;
+            }
+
+            QTableWidget QLineEdit {
+                background-color: #ffffff;
+                color: #102f35;
+                border: 2px solid #4d8188;
+                border-radius: 0;
+                padding: 3px 5px;
+                min-height: 27px;
             }
 
             QHeaderView::section {
-                background-color: #9fc9cd;
-                color: #244a51;
+                background-color: #bfd8db;
+                color: #183a40;
                 border: none;
-                border-right: 1px solid #78adb3;
-                border-bottom: 1px solid #78adb3;
+                border-right: 1px solid #628e94;
+                border-bottom: 1px solid #628e94;
                 padding: 6px;
                 font-weight: 700;
             }
 
+            QTableCornerButton::section {
+                background-color: #bfd8db;
+                border-right: 1px solid #628e94;
+                border-bottom: 1px solid #628e94;
+            }
+
             #plainResultValue {
-                color: #215760;
+                background-color: transparent;
+                border: none;
+                color: #154f58;
                 font-weight: 700;
                 padding-right: 2px;
             }
 
             #resultUnit {
-                color: #4c7279;
+                background-color: transparent;
+                color: #3f656b;
                 font-size: 12px;
                 padding-left: 4px;
             }
 
             #resultSeparator {
-                background-color: #78aeb4;
+                background-color: #628e94;
                 border: none;
             }
 
             QSplitter::handle {
-                background-color: #72adb5;
+                background-color: #5f9299;
             }
 
             QSplitter::handle:hover {
-                background-color: #5297a0;
+                background-color: #3e7881;
             }
 
             QScrollArea {
@@ -698,19 +585,20 @@ class MainWindow(QMainWindow):
 
             QScrollBar:vertical,
             QScrollBar:horizontal {
-                background-color: #a8c9cc;
+                background-color: #aac5c8;
                 border: none;
             }
 
             QScrollBar::handle {
-                background-color: #76aeb5;
-                border-radius: 3px;
-                min-width: 20px;
-                min-height: 20px;
+                background-color: #806287;
+                border: 1px solid #684c6e;
+                border-radius: 4px;
+                min-width: 22px;
+                min-height: 22px;
             }
 
             QScrollBar::handle:hover {
-                background-color: #5798a1;
+                background-color: #684c70;
             }
 
             QScrollBar::add-line,
@@ -720,9 +608,9 @@ class MainWindow(QMainWindow):
             }
 
             QStatusBar {
-                background-color: #91bdc3;
-                color: #264f56;
-                border-top: 1px solid #68a5ad;
+                background-color: #709da4;
+                color: #f0fafb;
+                border-top: 1px solid #4f8189;
             }
 
             QLabel {
