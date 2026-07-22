@@ -145,7 +145,7 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(
             "Data updated"
         )
-    
+        
     def _project_changed(self) -> None:
         """
         Handle updates after the project model changes.
@@ -160,18 +160,16 @@ class MainWindow(QMainWindow):
         )
 
         if results is None:
+
             self.graph.plot_profile(
                 time,
                 concentration,
             )
-        else:
-            highlighted_time = (
-                results.terminal_times
-            )
 
-            highlighted_concentration = (
-                results.terminal_concentrations
-            )
+            self.results.clear_results()
+
+        else:
+
             self.graph.plot_profile(
                 time,
                 concentration,
@@ -181,10 +179,16 @@ class MainWindow(QMainWindow):
                 fitted_concentration=(
                     results.fitted_terminal_concentrations
                 ),
-                highlighted_time=highlighted_time,
-                highlighted_concentration=(
-                    highlighted_concentration
+                highlighted_time=(
+                    results.terminal_times
                 ),
+                highlighted_concentration=(
+                    results.terminal_concentrations
+                ),
+            )
+
+            self.results.update_results(
+                results
             )
 
         self.statusBar().showMessage(

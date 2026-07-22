@@ -61,6 +61,7 @@ class ProjectController(QObject):
                     self.project
                 )
             )
+            print(self.analysis_result)
         else:
             self.analysis_result = None
 
