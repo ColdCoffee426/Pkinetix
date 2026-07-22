@@ -12,24 +12,17 @@ class DataValidator:
         time: str,
         concentration: str,
     ) -> ValidationResult:
-        """
-        Validate a single table row.
-        """
 
         result = ValidationResult()
 
         if time.strip() == "":
-            result.add_issue(
-                0,
-                0,
-                "Time cannot be empty.",
+            result.add_error(
+                "Time cannot be empty."
             )
 
         if concentration.strip() == "":
-            result.add_issue(
-                0,
-                1,
-                "Concentration cannot be empty.",
+            result.add_error(
+                "Concentration cannot be empty."
             )
 
         if not result.is_valid:
@@ -38,27 +31,21 @@ class DataValidator:
         try:
             float(time)
         except ValueError:
-            result.add_issue(
-                0,
-                0,
-                "Time must be numeric.",
+            result.add_error(
+                "Time must be numeric."
             )
 
         try:
             value = float(concentration)
 
             if value < 0:
-                result.add_issue(
-                    0,
-                    1,
-                    "Concentration cannot be negative.",
+                result.add_error(
+                    "Concentration cannot be negative."
                 )
 
         except ValueError:
-            result.add_issue(
-                0,
-                1,
-                "Concentration must be numeric.",
+            result.add_error(
+                "Concentration must be numeric."
             )
 
         return result
@@ -67,19 +54,14 @@ class DataValidator:
         self,
         project: Project,
     ) -> ValidationResult:
-        """
-        Validate the complete project.
-        """
 
         result = ValidationResult()
 
         observations = project.observations
 
         if len(observations) < 2:
-            result.add_issue(
-                0,
-                0,
-                "At least two observations are required.",
+            result.add_error(
+                "At least two observations are required."
             )
             return result
 
@@ -88,43 +70,33 @@ class DataValidator:
         for index, observation in enumerate(observations):
 
             if observation.time is None:
-                result.add_issue(
-                    index,
-                    0,
-                    "Missing time.",
+                result.add_error(
+                    f"Row {index+1}: Missing time."
                 )
 
             if observation.concentration is None:
-                result.add_issue(
-                    index,
-                    1,
-                    "Missing concentration.",
+                result.add_error(
+                    f"Row {index+1}: Missing concentration."
                 )
 
             if (
                 observation.concentration is not None
                 and observation.concentration < 0
             ):
-                result.add_issue(
-                    index,
-                    1,
-                    "Negative concentration.",
+                result.add_error(
+                    f"Row {index+1}: Negative concentration."
                 )
 
             if previous_time is not None:
 
                 if observation.time == previous_time:
-                    result.add_issue(
-                        index,
-                        0,
-                        "Duplicate time value.",
+                    result.add_error(
+                        f"Row {index+1}: Duplicate time value."
                     )
 
                 elif observation.time < previous_time:
-                    result.add_issue(
-                        index,
-                        0,
-                        "Time values must be increasing.",
+                    result.add_error(
+                        f"Row {index+1}: Time values must be increasing."
                     )
 
             previous_time = observation.time

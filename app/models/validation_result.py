@@ -7,12 +7,21 @@ class ValidationResult:
     Stores validation results.
     """
 
-    is_valid: bool = True
+    errors: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
-    errors: list[str] = field(
-        default_factory=list
-    )
+    @property
+    def is_valid(self) -> bool:
+        return len(self.errors) == 0
 
-    warnings: list[str] = field(
-        default_factory=list
-    )
+    def add_error(
+        self,
+        message: str,
+    ) -> None:
+        self.errors.append(message)
+
+    def add_warning(
+        self,
+        message: str,
+    ) -> None:
+        self.warnings.append(message)
