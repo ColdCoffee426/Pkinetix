@@ -4,67 +4,54 @@ Coordinates pharmacokinetic result calculations.
 
 from app.models.analysis_result import AnalysisResult
 from app.models.project import Project
-from pk.nca.auc import AUCMethod
-from pk.nca.cmax import calculate as calculate_cmax
-from pk.nca.tmax import calculate as calculate_tmax
 from pk.nca.auc import (
+    AUCMethod,
     calculate as calculate_auc,
     calculate_auc_infinity,
     calculate_extrapolated_auc,
     calculate_extrapolated_percent,
 )
-from pk.nca.lambda_z import calculate as calculate_lambda_z
-from pk.nca.half_life import calculate as calculate_half_life
 from pk.nca.aumc import calculate as calculate_aumc
-from pk.nca.mrt import calculate as calculate_mrt
 from pk.nca.clearance import calculate as calculate_clearance
+from pk.nca.cmax import calculate as calculate_cmax
+from pk.nca.half_life import calculate as calculate_half_life
+from pk.nca.lambda_z import calculate as calculate_lambda_z
+from pk.nca.mrt import calculate as calculate_mrt
+from pk.nca.tmax import calculate as calculate_tmax
 from pk.nca.volume import calculate as calculate_volume
 
 
 class ResultsEngine:
+    """
+    Coordinates pharmacokinetic result calculations.
+    """
 
-    def __init__(
-        self,
-        project: Project,
-    ) -> None:
+    def __init__(self, project: Project) -> None:
         self.project = project
 
     def calculate(self) -> AnalysisResult:
-
         result = AnalysisResult()
-
         observations = self.project.observations
 
-        cmax_observation = calculate_cmax(
-            observations
-        )
+        cmax_observation = calculate_cmax(observations)
 
         if cmax_observation is not None:
             result.cmax = cmax_observation.concentration
-            result.tmax = calculate_tmax(
-                cmax_observation
-            )
+            result.tmax = calculate_tmax(cmax_observation)
 
-       
         result.auc_0_t = calculate_auc(
             observations,
-            AUCMethod.LINEAR_UP_LOG_DOWN,
+            self._get_auc_method(),
         )
 
-        lambda_result = calculate_lambda_z(
-            observations
-        )
+        lambda_result = calculate_lambda_z(observations)
 
         result.lambda_z = lambda_result.lambda_z
-
         result.t_half = calculate_half_life(
             lambda_result.lambda_z
         )
 
-        result.aumc = calculate_aumc(
-            observations
-        )
-
+        result.aumc = calculate_aumc(observations)
         result.mrt = calculate_mrt(
             result.auc_0_t,
             result.aumc,
@@ -100,7 +87,6 @@ class ResultsEngine:
             self.project,
             result.auc_0_inf,
         )
-
         result.vz = calculate_volume(
             result.cl,
             result.lambda_z,
@@ -109,57 +95,45 @@ class ResultsEngine:
         result.terminal_points = (
             lambda_result.terminal_indices
         )
-
         result.terminal_times = (
             lambda_result.terminal_times
         )
-
         result.terminal_concentrations = (
             lambda_result.terminal_concentrations
         )
-
         result.terminal_r_squared = (
             lambda_result.r_squared
         )
-
         result.terminal_adjusted_r_squared = (
             lambda_result.adjusted_r_squared
         )
-
-        result.terminal_sse = (
-            lambda_result.sse
-        )
-
-        result.terminal_aic = (
-            lambda_result.aic
-        )
-
-        result.terminal_bic = (
-            lambda_result.bic
-        )
-
+        result.terminal_sse = lambda_result.sse
+        result.terminal_aic = lambda_result.aic
+        result.terminal_bic = lambda_result.bic
         result.terminal_confidence = (
             lambda_result.confidence
         )
+        result.terminal_rmse = lambda_result.rmse
+        result.terminal_mae = lambda_result.mae
+        result.terminal_bias = lambda_result.bias
 
         result.fitted_terminal_times = (
             lambda_result.fitted_times
         )
-
         result.fitted_terminal_concentrations = (
             lambda_result.fitted_concentrations
         )
 
-        result.terminal_rmse = (
-            lambda_result.rmse
-        )
-
-        result.terminal_mae = (
-            lambda_result.mae
-        )
-
-        result.terminal_bias = (
-            lambda_result.bias
-        )
+        result.route = self.project.route
 
         return result
+
+    def _get_auc_method(self) -> AUCMethod:
+        """
+        Return the selected AUC calculation method.
+        """
+
+        try:
+            return AUCMethod(self.project.auc_method)
+        except ValueError:
+            return AUCMethod.LINEAR_UP_LOG_DOWN
