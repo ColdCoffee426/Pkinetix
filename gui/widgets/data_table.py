@@ -51,6 +51,13 @@ class DataTableWidget(QWidget):
             | QAbstractItemView.EditKeyPressed
             | QAbstractItemView.SelectedClicked
         )
+
+        self.table.setShowGrid(False)
+        self.table.setAlternatingRowColors(False)
+        self.table.setWordWrap(False)
+        self.table.verticalHeader().setVisible(False)
+
+
         self.table.horizontalHeader().setSectionResizeMode(
             QHeaderView.Stretch
         )
