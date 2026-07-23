@@ -2,7 +2,7 @@ from PySide6.QtCore import QObject, Signal
 
 from app.models.observation import ObservationInput
 from app.models.project import Project
-from app.services.data_validator import DataValidator
+from app.services.data_validator1 import DataValidator
 from pk.analysis_manager import AnalysisManager
 
 

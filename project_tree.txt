@@ -1,4 +1,7 @@
 .
+├── .github
+│   └── workflows
+│       └── build-windows.yml
 ├── .gitignore
 ├── Commands.txt
 ├── README.md
@@ -28,6 +31,7 @@
 │   ├── icons
 │   └── logo
 │       └── Pkinetix_logo.png
+├── build
 ├── docs
 ├── gui
 │   ├── __init__.py
@@ -42,6 +46,8 @@
 │       └── study_information.py
 ├── io
 ├── main.py
+├── main.spec
+├── main_window_backup.txt
 ├── pk
 │   ├── __init__.py
 │   ├── analysis_engine.py
@@ -85,4 +91,4 @@
 ├── requirements.txt
 └── tests
 
-22 directories, 64 files
+25 directories, 67 files

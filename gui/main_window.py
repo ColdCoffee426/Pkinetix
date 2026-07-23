@@ -40,8 +40,8 @@ class MainWindow(QMainWindow):
             self.application_state.project
         )
 
-        self.setWindowTitle("PKinetix lite")
-        self.resize(1500, 900)
+        self.setWindowTitle("PKinetix Lite")
+        self.resize(1400, 800)
 
         self._create_central_widget()
         self._create_layout()
@@ -271,7 +271,7 @@ class MainWindow(QMainWindow):
     def _create_brand_header(self) -> QFrame:
         frame = QFrame()
         frame.setObjectName("brandHeader")
-        frame.setFixedHeight(58)
+        frame.setFixedHeight(40)
 
         layout = QHBoxLayout(frame)
         layout.setContentsMargins(
@@ -389,7 +389,7 @@ class MainWindow(QMainWindow):
             Window background:     #89adb2
             Panel background:      #9fc0c4
             Header teal:           #156dc6
-            Purple heading:        #96719b
+            Purple heading:        #22baba
             Text:                  #183a40
             Table lines:           #628e94
             Scrollbar accent:      #806287
@@ -400,7 +400,7 @@ class MainWindow(QMainWindow):
             }
 
             QWidget {
-                background-color: #b8d7f4;
+                background-color: #a2bedb;
                 color: #163a5c;
                 font-size: 13px;
             }
@@ -426,14 +426,14 @@ class MainWindow(QMainWindow):
 
             #majorHeading,
             #sectionHeading {
-                background-color: #96719b;
+                background-color: #22baba;
                 border: 1px solid #745379;
                 color: #fff7ff;
                 font-weight: 700;
                 letter-spacing: 1px;
                 border-radius: 3px;
-                min-height: 36px;
-                max-height: 36px;
+                min-height: 26px;
+                max-height: 26px;
             }
 
           QLineEdit,
@@ -550,7 +550,7 @@ class MainWindow(QMainWindow):
             #plainResultValue {
                 background-color: transparent;
                 border: none;
-                color: #154f58;
+                color: #e1f03a;
                 font-weight: 700;
                 padding-right: 2px;
             }
@@ -586,7 +586,7 @@ class MainWindow(QMainWindow):
 
             QScrollBar:vertical,
             QScrollBar:horizontal {
-                background-color: #aac5c8;
+                background-color:  #a2bedb;
                 border: none;
             }
 

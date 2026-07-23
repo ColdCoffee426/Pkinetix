@@ -6,6 +6,7 @@ from app.models.analysis_result import AnalysisResult
 from app.models.project import Project
 from pk.nca.auc import (
     AUCMethod,
+    add_time_zero_observation,
     calculate as calculate_auc,
     calculate_auc_infinity,
     calculate_extrapolated_auc,
@@ -36,6 +37,10 @@ class ResultsEngine:
     def calculate(self) -> AnalysisResult:
         result = AnalysisResult()
         observations = self.project.observations
+        auc_method = self._get_auc_method()
+        integration_observations = (
+            self._get_integration_observations(result)
+        )
 
         cmax_observation = calculate_cmax(observations)
 
@@ -44,18 +49,20 @@ class ResultsEngine:
             result.tmax = calculate_tmax(cmax_observation)
 
         result.auc_0_t = calculate_auc(
-            observations,
-            self._get_auc_method(),
+            integration_observations,
+            auc_method,
         )
 
         lambda_result = calculate_lambda_z(observations)
-
         result.lambda_z = lambda_result.lambda_z
         result.t_half = calculate_half_life(
             lambda_result.lambda_z
         )
 
-        result.aumc = calculate_aumc(observations)
+        result.aumc = calculate_aumc(
+            integration_observations,
+            auc_method,
+        )
 
         last_time = (
             observations[-1].time
@@ -120,6 +127,68 @@ class ResultsEngine:
                 result.vz / self.project.body_weight
             )
 
+        self._copy_terminal_results(
+            result,
+            lambda_result,
+        )
+
+        if result.lambda_z is None:
+            result.warnings.append(
+                "AUC 0-inf could not be calculated because "
+                "a valid terminal elimination phase was not found."
+            )
+        elif (
+            lambda_result.adjusted_r_squared is not None
+            and lambda_result.adjusted_r_squared < 0.90
+        ):
+            result.warnings.append(
+                "The terminal phase fit is weak; AUC 0-inf "
+                "and half-life should be interpreted cautiously."
+            )
+
+        if (
+            result.auc_extrapolated_percent is not None
+            and result.auc_extrapolated_percent > 20
+        ):
+            result.warnings.append(
+                "More than 20% of AUC 0-inf is extrapolated."
+            )
+
+        result.route = self.project.route
+        return result
+
+    def _get_integration_observations(
+        self,
+        result: AnalysisResult,
+    ):
+        observations = self.project.observations
+
+        if not observations:
+            return []
+
+        if observations[0].time == 0:
+            return list(observations)
+
+        if self.project.route == "IV Bolus":
+            result.warnings.append(
+                "No time-zero concentration was entered. "
+                "IV bolus back-extrapolation to C0 is not yet "
+                "implemented, so AUC begins at the first sample."
+            )
+            return list(observations)
+
+        result.notes.append(
+            "A calculation-only concentration of zero was "
+            "imputed at time zero for AUC and AUMC."
+        )
+
+        return add_time_zero_observation(observations)
+
+    @staticmethod
+    def _copy_terminal_results(
+        result: AnalysisResult,
+        lambda_result,
+    ) -> None:
         result.terminal_points = (
             lambda_result.terminal_indices
         )
@@ -142,17 +211,12 @@ class ResultsEngine:
         result.terminal_rmse = lambda_result.rmse
         result.terminal_mae = lambda_result.mae
         result.terminal_bias = lambda_result.bias
-
         result.fitted_terminal_times = (
             lambda_result.fitted_times
         )
         result.fitted_terminal_concentrations = (
             lambda_result.fitted_concentrations
         )
-
-        result.route = self.project.route
-
-        return result
 
     def _get_auc_method(self) -> AUCMethod:
         try:
