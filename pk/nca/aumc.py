@@ -1,11 +1,15 @@
+import math
+
 from app.models.observation import Observation
+from pk.nca.auc import AUCMethod
 
 
 def calculate(
     observations: list[Observation],
+    method: AUCMethod = AUCMethod.LINEAR_UP_LOG_DOWN,
 ) -> float | None:
     """
-    Calculate AUMC from the first to last observation.
+    Calculate AUMC over the supplied observations.
     """
 
     if len(observations) < 2:
@@ -24,16 +28,72 @@ def calculate(
                 "Observation times must be strictly increasing."
             )
 
-        left_moment = left.time * left.concentration
-        right_moment = right.time * right.concentration
-
-        aumc += (
-            (left_moment + right_moment)
-            / 2
-            * delta_time
+        use_log = (
+            method == AUCMethod.LOG
+            or (
+                method == AUCMethod.LINEAR_UP_LOG_DOWN
+                and right.concentration < left.concentration
+            )
         )
 
+        if use_log:
+            area = _log_moment_area(
+                left,
+                right,
+                delta_time,
+            )
+        else:
+            area = _linear_moment_area(
+                left,
+                right,
+                delta_time,
+            )
+
+        aumc += area
+
     return aumc
+
+
+def _linear_moment_area(
+    left: Observation,
+    right: Observation,
+    delta_time: float,
+) -> float:
+    left_moment = left.time * left.concentration
+    right_moment = right.time * right.concentration
+
+    return (
+        (left_moment + right_moment)
+        / 2
+        * delta_time
+    )
+
+
+def _log_moment_area(
+    left: Observation,
+    right: Observation,
+    delta_time: float,
+) -> float:
+    c1 = left.concentration
+    c2 = right.concentration
+
+    if c1 <= 0 or c2 <= 0 or c1 == c2:
+        return _linear_moment_area(
+            left,
+            right,
+            delta_time,
+        )
+
+    log_ratio = math.log(c1 / c2)
+
+    return (
+        delta_time
+        * (left.time * c1 - right.time * c2)
+        / log_ratio
+        + delta_time**2
+        * (c1 - c2)
+        / log_ratio**2
+    )
 
 
 def calculate_extrapolated(
@@ -64,7 +124,7 @@ def calculate_infinity(
     aumc_extrapolated: float | None,
 ) -> float | None:
     """
-    Calculate AUMC from zero to infinity.
+    Calculate AUMC from time zero to infinity.
     """
 
     if (

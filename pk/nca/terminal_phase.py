@@ -7,60 +7,57 @@ from app.models.terminal_phase_candidate import (
 def generate_candidates(
     observations: list[Observation],
     minimum_points: int = 3,
+    allow_tmax: bool = True,
 ) -> list[TerminalPhaseCandidate]:
     """
-    Generate all possible terminal phase candidates.
+    Generate terminal-phase candidates ending at the last point.
 
-    Each candidate contains the final observations of the
-    concentration-time profile.
-
-    Parameters
-    ----------
-    observations
-        Validated observations.
-
-    minimum_points
-        Minimum number of observations required for a
-        terminal phase.
-
-    Returns
-    -------
-    list[TerminalPhaseCandidate]
+    Pre-Tmax observations are excluded. Tmax may be included when
+    allow_tmax is True.
     """
 
-    candidates: list[
-        TerminalPhaseCandidate
-    ] = []
+    if len(observations) < minimum_points:
+        return []
 
-    observation_count = len(observations)
+    cmax_index = max(
+        range(len(observations)),
+        key=lambda index: observations[index].concentration,
+    )
 
-    if observation_count < minimum_points:
-        return candidates
+    earliest_start = (
+        cmax_index
+        if allow_tmax
+        else cmax_index + 1
+    )
+
+    latest_start = len(observations) - minimum_points
+
+    if earliest_start > latest_start:
+        return []
+
+    candidates: list[TerminalPhaseCandidate] = []
 
     for start in range(
-        observation_count - minimum_points,
-        -1,
+        latest_start,
+        earliest_start - 1,
         -1,
     ):
         subset = observations[start:]
 
-        candidate = TerminalPhaseCandidate(
-            indices=list(
-                range(
-                    start,
-                    observation_count,
-                )
-            ),
-            times=[
-                observation.time
-                for observation in subset
-            ],
-            concentrations=[
-                observation.concentration
-                for observation in subset
-            ],
+        candidates.append(
+            TerminalPhaseCandidate(
+                indices=list(
+                    range(start, len(observations))
+                ),
+                times=[
+                    observation.time
+                    for observation in subset
+                ],
+                concentrations=[
+                    observation.concentration
+                    for observation in subset
+                ],
+            )
         )
-
-        candidates.append(candidate)
 
     return candidates

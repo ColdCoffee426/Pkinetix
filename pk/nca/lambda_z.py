@@ -2,36 +2,25 @@ import math
 
 from app.models.lambda_z_result import LambdaZResult
 from app.models.observation import Observation
-
-from pk.common.goodness_of_fit import (
-    bias,
-    mae,
-    rmse,
-)
+from pk.common.goodness_of_fit import bias, mae, rmse
 from pk.common.regression import linear_regression
-from pk.common.statistics import regression_score
 from pk.nca.terminal_phase import generate_candidates
 
 
-MINIMUM_ADJUSTED_R2 = 0.80
+ADJUSTED_R2_TOLERANCE = 1e-4
+GOOD_FIT_ADJUSTED_R2 = 0.90
 
 
 def calculate(
     observations: list[Observation],
 ) -> LambdaZResult:
     """
-    Estimate the terminal elimination rate constant (λz).
+    Estimate the terminal elimination rate constant.
     """
 
-    candidates = generate_candidates(
-        observations
-    )
+    valid_fits = []
 
-    best_candidate = None
-    best_regression = None
-
-    for candidate in candidates:
-
+    for candidate in generate_candidates(observations):
         if any(
             concentration <= 0
             for concentration in candidate.concentrations
@@ -48,65 +37,38 @@ def calculate(
                 candidate.times,
                 log_concentrations,
             )
-        except Exception:
+        except (ValueError, ArithmeticError):
             continue
 
         if regression.slope >= 0:
             continue
 
-        if (
-            regression.adjusted_r_squared
-            < MINIMUM_ADJUSTED_R2
-        ):
-            continue
-
         candidate.regression = regression
+        valid_fits.append((candidate, regression))
 
-        candidate.score = regression_score(
-            regression,
-            len(candidate.indices),
+    if not valid_fits:
+        return _empty_result(
+            "No valid terminal phase found"
         )
 
-        if (
-            best_candidate is None
-            or candidate.score > best_candidate.score
-        ):
-            best_candidate = candidate
-            best_regression = regression
-
-    if (
-        best_candidate is None
-        or best_regression is None
-    ):
-        return LambdaZResult(
-            lambda_z=None,
-            slope=None,
-            intercept=None,
-            r=None,
-            r_squared=None,
-            adjusted_r_squared=None,
-            sse=None,
-            aic=None,
-            bic=None,
-            terminal_indices=[],
-            terminal_times=[],
-            terminal_concentrations=[],
-            confidence=None,
-            status="No valid terminal phase found",
-        )
-
-    confidence = min(
-        100.0,
-        max(
-            0.0,
-            best_candidate.score / 10,
-        ),
+    best_adjusted_r2 = max(
+        regression.adjusted_r_squared
+        for _, regression in valid_fits
     )
 
-    fitted_times = list(
-        best_candidate.times
+    eligible_fits = [
+        (candidate, regression)
+        for candidate, regression in valid_fits
+        if regression.adjusted_r_squared
+        >= best_adjusted_r2 - ADJUSTED_R2_TOLERANCE
+    ]
+
+    best_candidate, best_regression = max(
+        eligible_fits,
+        key=lambda fit: len(fit[0].indices),
     )
 
+    fitted_times = list(best_candidate.times)
     fitted_concentrations = [
         math.exp(
             best_regression.intercept
@@ -115,19 +77,16 @@ def calculate(
         for time in fitted_times
     ]
 
-    fit_rmse = rmse(
-        best_candidate.concentrations,
-        fitted_concentrations,
+    adjusted_r2 = best_regression.adjusted_r_squared
+    confidence = max(
+        0.0,
+        min(100.0, adjusted_r2 * 100),
     )
 
-    fit_mae = mae(
-        best_candidate.concentrations,
-        fitted_concentrations,
-    )
-
-    fit_bias = bias(
-        best_candidate.concentrations,
-        fitted_concentrations,
+    status = (
+        "Good fit"
+        if adjusted_r2 >= GOOD_FIT_ADJUSTED_R2
+        else "Poor fit"
     )
 
     return LambdaZResult(
@@ -136,9 +95,7 @@ def calculate(
         intercept=best_regression.intercept,
         r=best_regression.r,
         r_squared=best_regression.r_squared,
-        adjusted_r_squared=(
-            best_regression.adjusted_r_squared
-        ),
+        adjusted_r_squared=adjusted_r2,
         sse=best_regression.sse,
         aic=best_regression.aic,
         bic=best_regression.bic,
@@ -148,10 +105,38 @@ def calculate(
             best_candidate.concentrations
         ),
         confidence=confidence,
-        status="Success",
+        status=status,
         fitted_times=fitted_times,
         fitted_concentrations=fitted_concentrations,
-        rmse=fit_rmse,
-        mae=fit_mae,
-        bias=fit_bias,
+        rmse=rmse(
+            best_candidate.concentrations,
+            fitted_concentrations,
+        ),
+        mae=mae(
+            best_candidate.concentrations,
+            fitted_concentrations,
+        ),
+        bias=bias(
+            best_candidate.concentrations,
+            fitted_concentrations,
+        ),
+    )
+
+
+def _empty_result(status: str) -> LambdaZResult:
+    return LambdaZResult(
+        lambda_z=None,
+        slope=None,
+        intercept=None,
+        r=None,
+        r_squared=None,
+        adjusted_r_squared=None,
+        sse=None,
+        aic=None,
+        bic=None,
+        terminal_indices=[],
+        terminal_times=[],
+        terminal_concentrations=[],
+        confidence=None,
+        status=status,
     )
