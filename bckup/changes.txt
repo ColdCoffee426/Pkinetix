@@ -1,0 +1,12 @@
+app/controllers/project_controller.py
+gui/main_window.py
+gui/widgets/data_table.py
+gui/widgets/graph_widget.py
+gui/widgets/plotting/plot_canvas.py
+gui/widgets/results_widget.py
+gui/widgets/study_information.py
+
+
+
+this is the new file that was made 
+gui/widgets/comparison_widget.py
